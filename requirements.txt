@@ -1,0 +1,11 @@
+requests
+websocket-client
+flask
+orjson
+flask
+flask-socketio
+gunicorn
+eventlet
+psutil
+beautifulsoup4
+# py-cord
