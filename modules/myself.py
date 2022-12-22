@@ -1,23 +1,18 @@
-from functools import reduce
+from configs import *
+from modules import Json
 
 from bs4 import BeautifulSoup
 from requests import get
+from websocket import create_connection
+from urllib.parse import urljoin
+from os.path import split as ossplit
 
 # 偽裝瀏覽器
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Mobile Safari/537.36 Edg/93.0.961.52',
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)",
 }
-
-# 星期一 ~ 星期日
-week = {
-    0: 'Monday',
-    1: 'Tuesday',
-    2: 'Wednesday',
-    3: 'Thursday',
-    4: 'Friday',
-    5: 'Saturday',
-    6: 'Sunday',
-}
+TIMEOUT = 5
+_STRIP = " \"\n"
 
 # 動漫資訊的 Key 對照表
 animate_table = {
@@ -29,7 +24,6 @@ animate_table = {
     '備注': 'remarks',
 }
 
-
 def badname(name: str) -> str:
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
@@ -40,21 +34,94 @@ def badname(name: str) -> str:
     return reduce(lambda x, y: x + y if y not in ban else x + ' ', name).strip()
 
 
-class Myself:
-    @staticmethod
-    def _req(url: str, timeout: tuple = (5, 5)) -> requests:
-        try:
-            return requests.get(url=url, headers=headers, timeout=timeout)
-        except requests.exceptions.RequestException as error:
-            print(f'請求有錯誤: {error}')
-            return None
+class MyselfAnime:
+    EPS_NAME: str
+    TID: str
+    VID: str
+    def __init__(self, episode_name: str, tid: str, vid: str) -> None:
+        """
+        Myself影片。
 
+        episode_name: :class:`str`
+            集數名稱。
+        tid: :class:`str`
+            動畫ID。
+        vid: :class:`str`
+            影片ID。
+        """
+        self.EPS_NAME = episode_name
+        self.TID = tid
+        self.VID = vid
+    
+    def get_m3u8_url(self) -> tuple[str, str]:
+        """
+        取得m3u8連結。
+
+        return: :class:`tuple[str, str]`
+            (m3u8主機位置, m3u8檔案位置)
+        """
+        ws = create_connection(
+            url="wss://v.myself-bbs.com/ws",
+            timeout=TIMEOUT,
+            header=HEADERS,
+            host="v.myself-bbs.com",
+            origin="https://v.myself-bbs.com"
+        )
+        ws.send(Json.dumps({"tid": self.TID, "vid": self.VID, "id": ""}))
+        _data: dict = Json.loads(ws.recv())
+        m3u8_file = urljoin("https://", _data["video"])
+        m3u8_server = ossplit(m3u8_file)[0]
+        ws.close()
+        return m3u8_server, m3u8_file
+
+class MyselfAnimeTable:
+    URL: str                     # 網址
+    TID: str                     # ID
+    IMAGE_URL: str               # 縮圖連結
+    ANI_TYPE: str                # 類型
+    PRE_DATE: str                # 首播日期
+    EPS_NUM: str                 # 播放集數
+    AUTHOR: str                  # 作者
+    OFFICIAL_WEB: str            # 官方網站
+    REMARKS: str                 # 備註
+    INTRO: str                   # 簡介
+    VIDEO_VID: list[MyselfAnime] # 影片清單
+    def __init__(self, url: str, cache: bool=True) -> None:
+        """
+        Myself動畫資料。
+
+        url: :class:`str`
+            網址。
+        cache: :class:`bool`
+            是否從快取讀取。
+        """
+        self.URL = url                 # https://myself-bbs.com/thread-48821-1-1.html
+        
+        _page = url.split("/")[-1]     # thread-48821-1-1.html
+        self.TID = _page.split("-")[1] # 48821
+
+        _soup = BeautifulSoup(get(self.URL, headers=HEADERS, timeout=TIMEOUT), features="lxml")
+        _info_list = _soup.select("div.info_info li")
+
+        self.IMAGE_URL    = _soup.select_one("div.info_img_box img")["src"]
+        self.ANI_TYPE     = _info_list[0].text.split(":", 1)[1].strip(_STRIP)
+        self.PRE_DATE     = _info_list[1].text.split(":", 1)[1].strip(_STRIP)
+        self.EPS_NUM      = _info_list[2].text.split(":", 1)[1].strip(_STRIP)
+        self.AUTHOR       = _info_list[3].text.split(":", 1)[1].strip(_STRIP)
+        self.OFFICIAL_WEB = _info_list[4].text.split(":", 1)[1].strip(_STRIP)
+        self.REMARKS      = _info_list[5].text.split(":", 1)[1].strip(_STRIP)
+        self.INTRO        = _soup.select_one("#info_introduction_text").text.split(_STRIP)
+
+        self.VIDEO_VID = []
+
+class Myself:
     @classmethod
-    def week_animate(cls) -> dict:
+    def week_animate(cls) -> list:
         """
         爬首頁的每週更新表。
-        :return: dict。
-        {
+        index 0 對應星期日。
+        :return: list
+        [
             'Monday': [{
                 'name': 動漫名字,
                 'url': 動漫網址,
@@ -64,26 +131,32 @@ class Myself:
             }, ...],
             'Tuesday': [{...}],
             ...
-        }
+        ]
         """
-        res = cls._req(url='https://myself-bbs.com/portal.php')
-        data = {}
-        if res and res.ok:
-            html = BeautifulSoup(res.text, features='lxml')
-            elements = html.find('div', id='tabSuCvYn')
-            for index, elements in enumerate(elements.find_all('div', class_='module cl xl xl1')):
-                animates = []
-                for element in elements:
-                    animates.append({
-                        'name': element.find('a')['title'],
-                        'url': f"https://myself-bbs.com/{element.find('a')['href']}",
-                        'update_color': element.find('span').find('font').find('font')['style'],
-                        'update': element.find('span').find('font').text,
-                    })
-                data.update({
-                    week[index]: animates
-                })
-        return data
+        while True:
+            try:
+                res = get(url="https://myself-bbs.com/portal.php", headers=HEADERS, timeout=TIMEOUT)
+                soup = BeautifulSoup(res.content, features="lxml")
+                week_dict: dict = {}
+                for i in html.find_all('div', id='tabSuCvYn'):
+                    for index, j in enumerate(i.find_all('div', class_='module cl xl xl1')):
+                        num = j.find_all('a') + j.find_all('span')
+                        color = list()
+                        anime_data = dict()
+                        for k, v in enumerate(j.find_all('font')):
+                            if k % 3 == 2:
+                                color.append(v.attrs['style'])
+                        for k in range(len(num) // 2):
+                            anime_data.update({num[k]['title']: {'update': num[k + len(num) // 2].text, 'color': color[k],
+                                                                'url': f'https://myself-bbs.com/{num[k]["href"]}'}})
+                        week_dict.update({index: anime_data})
+                res.close()
+                res, html = None, None
+                del res, html
+                return week_dict
+            except Exception as e:
+                print(f'error get_end_anime_list: {e}')
+                time.sleep(5)
 
     @staticmethod
     def animate_info_video_data(html: BeautifulSoup) -> list:
