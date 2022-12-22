@@ -117,22 +117,22 @@ else:
     SQL_CONFIG = {
         "database": f"{CONFIG['sql']['database']}.db",
     }
-    from sqlite3 import connect
-    if not isfile("data.db"):
-        db = connect(**SQL_CONFIG)
-        cursor = db.cursor()
-        cursor.execute("""
-            CREATE TABLE "Users" (
-                "discord_id" INTEGER NOT NULL UNIQUE,
-                "account" TEXT NOT NULL UNIQUE,
-                "password" TEXT NOT NULL,
-                "token"	TEXT UNIQUE,
-                PRIMARY KEY("discord_id")
-            );
-        """)
-        db.commit()
-        cursor.close()
-        db.close()
+    # from sqlite3 import connect
+    # if not isfile("data.db"):
+    #     db = connect(**SQL_CONFIG)
+    #     cursor = db.cursor()
+    #     cursor.execute("""
+    #         CREATE TABLE "Users" (
+    #             "discord_id" INTEGER NOT NULL UNIQUE,
+    #             "account" TEXT NOT NULL UNIQUE,
+    #             "password" TEXT NOT NULL,
+    #             "token"	TEXT UNIQUE,
+    #             PRIMARY KEY("discord_id")
+    #         );
+    #     """)
+    #     db.commit()
+    #     cursor.close()
+    #     db.close()
 
 LOGGING_CONFIG: dict[str, LoggingConfig] = {
     "main": LoggingConfig(CONFIG["logging"]["main"]),
