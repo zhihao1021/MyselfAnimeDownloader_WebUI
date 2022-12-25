@@ -126,4 +126,5 @@ for name in LOGGING_CONFIG.keys():
     _logger.addHandler(_file_handler)
 
 MAIN_LOGGER = getLogger("main")
+MYSELF_LOGGER = getLogger("myself")
 WEB_LOGGER = getLogger("web")

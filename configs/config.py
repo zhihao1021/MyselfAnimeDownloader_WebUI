@@ -37,22 +37,18 @@ CONFIG = {
         "connections": 10,
         "threads": 3,
         "retry": 3,
-        "zerofill": 2
+        "zerofill": 2,
+        "timeout": 5,
     },
     "myself": {
         "check_update": 5,
         "classify": True,
         "file_name": "[Myself]$NAME $NOTE $NUM集",
         "dir_name": "[Myself]$NAME",
-        "download_path": "download/myself"
+        "download_path": "download/myself",
     },
     "sql": {
-        "mysql": False, # 未提供支援
-        "host": "",
-        "port": 0,
-        "user": "",
-        "password": "",
-        "database": "data"
+        "database": "data",
     },
     "logging": {
         "main": {
@@ -60,6 +56,13 @@ CONFIG = {
             "file_level": "INFO",
             "backup_count": 3,
             "file_name": "main",
+            "dir_path": "logs",
+        },
+        "myself": {
+            "stream_level": "INFO",
+            "file_level": "INFO",
+            "backup_count": 3,
+            "file_name": "myself",
             "dir_path": "logs",
         },
         "web": {
@@ -95,6 +98,7 @@ CONS: int = CONFIG["global"]["connections"]
 THRS: int = CONFIG["global"]["threads"]
 RETRY: int = CONFIG["global"]["retry"]
 ZFILL: int = CONFIG["global"]["zerofill"]
+TIMEOUT: float = CONFIG["global"]["timeout"]
 
 MYSELF_UPDATE: int = CONFIG["myself"]["check_update"]
 MYSELF_CLASSIFY: bool = CONFIG["myself"]["classify"]
@@ -102,43 +106,13 @@ MYSELF_FILE: str = CONFIG["myself"]["file_name"]
 MYSELF_DIR: str = CONFIG["myself"]["dir_name"]
 MYSELF_DOWNLOAD: str = CONFIG["myself"]["download_path"]
 
-SQL_MYSQL: bool = CONFIG["sql"]["mysql"]
-SQL_CONFIG: dict = {}
-if SQL_MYSQL:
-    SQL_CONFIG = {
-        "host": CONFIG["sql"]["host"],
-        "port": CONFIG["sql"]["port"],
-        "user": CONFIG["sql"]["user"],
-        "password": CONFIG["sql"]["password"],
-        "database": CONFIG["sql"]["database"],
-        "charset": "utf-8"
-    }
-else:
-    SQL_CONFIG = {
-        "database": f"{CONFIG['sql']['database']}.db",
-    }
-    # from sqlite3 import connect
-    # if not isfile("data.db"):
-    #     db = connect(**SQL_CONFIG)
-    #     cursor = db.cursor()
-    #     cursor.execute("""
-    #         CREATE TABLE "Users" (
-    #             "discord_id" INTEGER NOT NULL UNIQUE,
-    #             "account" TEXT NOT NULL UNIQUE,
-    #             "password" TEXT NOT NULL,
-    #             "token"	TEXT UNIQUE,
-    #             PRIMARY KEY("discord_id")
-    #         );
-    #     """)
-    #     db.commit()
-    #     cursor.close()
-    #     db.close()
+SQL_DB = f"{CONFIG['sql']['database']}.db",
 
 LOGGING_CONFIG: dict[str, LoggingConfig] = {
     "main": LoggingConfig(CONFIG["logging"]["main"]),
+    "myself": LoggingConfig(CONFIG["logging"]["myself"]),
     "web": LoggingConfig(CONFIG["logging"]["web"]),
 }
 
 TIMEZONE: timezone = timezone(timedelta(hours=CONFIG["timezone"]))
 FFMPEG_ARGS: str = CONFIG["ffmpeg_args"]
-        

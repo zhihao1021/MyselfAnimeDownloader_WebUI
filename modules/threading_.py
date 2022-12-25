@@ -3,7 +3,7 @@ import threading
 from time import sleep
 from logging import getLogger
 
-logger = getLogger("ThreadManger")
+logger = getLogger("main")
 
 class Thread(threading.Thread):
     """
