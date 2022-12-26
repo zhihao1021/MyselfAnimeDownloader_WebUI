@@ -1,51 +1,60 @@
 # import asyncio
 # from myself import Myself
+# from timeit import timeit
+
+# # async def func(lock: asyncio.Lock, i: int):
+# #     if False not in map(lambda lock: lock.locked(), locks):
+# #         await asyncio.sleep(0.5)
+# #         continue
+# #     print(f"Coro {i} Start!")
+# #     await asyncio.sleep(3)
+# #     print(f"Coro {i} End!")
+# #     # await lock.release()
+# #     return
+
+
+# async def main():
+#     await Myself.weekly_update(update=True)
+#     # print("Start.")
+#     # locks = []
+#     # for _ in range(num):
+#     #     locks.append(asyncio.Lock())
+#     # for i in range(50):
+#     #     if False not in map(lambda lock: lock.locked(), locks):
+#     #         await asyncio.sleep(0.5)
+#     #         continue
+#     #     for lock in [_lock for _lock in locks if not _lock.locked()]:
+#     #     await func("", i)
+#     # print("All Finish.")
+# # ('https://vpx06.myself-bbs.com/vpx/46195/001', 'https://vpx06.myself-bbs.com/vpx/46195/001/720p.m3u8')
+# def time_it():
+#     loop = asyncio.new_event_loop()
+#     loop.run_until_complete(main())
+
+
+# print(timeit(time_it, number=1))
+
+# import asyncio
+# import async_io
+
 # from async_io import requests
-# from requests import get
-# from time import time_ns
-# from aiohttp import ClientSession
-# from websockets.client import connect as ws_connect
-# from configs import UA, TIMEOUT
-# from modules import Json
-# from urllib.parse import urlunparse
 
-# async def test():
-#     timer = time_ns()
-    
-#     res = await Myself.search("1", start_page=24)
-#     print(res)
-#     # await res["2022年07月（夏）"][2].update()
-#     # print(res["2022年07月（夏）"][2])
-    
-#     print((time_ns() - timer) * 10 ** -9)
-
+# async def main():
+#     print("start")
+#     headers = {
+#         "origin": "https://v.myself-bbs.com/",
+#         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0 (Edition GX-CN)",
+#         "sec-fetch-mode": "cors",
+#     }
+#     _res = await requests("https://vpx13.myself-bbs.com/vpx/46195/001/720p_000.ts", headers=headers)
+#     print(_res)
+#     print("finish")
 
 # loop = asyncio.new_event_loop()
-# loop.run_until_complete(test())
-# loop.close()
-# input("End")
+# loop.run_until_complete(main())
+# input()
 
-from timeit import timeit
-from hashlib import sha1
+from requests import get
 
-CASE = list(range(1000))
-
-def func(x: int, y: int):
-    # CPU-Bound
-    sha1((str(x) * y).encode())
-
-def func_for_loop():
-    for i in range(len(CASE)):
-        func(i, CASE[i])
-
-def func_map(): map(func, range(len(CASE)), CASE)
-
-def func_map_enu(): map(func, enumerate(CASE))
-
-if __name__ == "__main__":
-    print("for loop:", timeit(func_for_loop, number=10 ** 4), "s")
-    # for loop: 34.88419339992106 s
-    print("map", timeit(func_map, number=10 ** 7), "s")
-    # map: 15.0609385003333577 s
-    print("map + enumerate", timeit(func_map_enu, number=10 ** 7), "s")
-    # map + enumerate: 12.320802200119942 s
+res = get("https://vpx13.myself-bbs.com/vpx/46195/001/720p_000.ts", headers={"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0 (Edition GX-CN)"}, stream=True)
+print(res.status_code)
