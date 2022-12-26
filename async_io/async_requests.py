@@ -14,7 +14,7 @@ def new_session(cookies: Optional[dict[str, str]]=None):
     return ClientSession(
         headers=HEADERS,
         read_timeout=TIMEOUT,
-        cookies=cookies
+        cookies=cookies,
     )
 
 async def requests(
@@ -24,8 +24,9 @@ async def requests(
     data: Any=None,
     method: Literal["GET", "POST", "HEAD"]="GET",
     cookies: Optional[dict[str, str]]=None,
-    raw: bool=False
-) -> Optional[Union[str, dict, ClientResponse]]:
+    headers: Optional[dict]=None,
+    raw: bool=False,
+) -> Optional[Union[bytes, dict, ClientResponse]]:
     """
     非同步請求。
 
@@ -44,11 +45,18 @@ async def requests(
         if _client == None:
             _client = new_session(cookies)
             need_close = True
-
-        if method == "HEAD": _res = await _client.head(url)
-        elif method == "POST": _res = await _client.post(url, data=data)
-        else: _res = await _client.get(url)
-
+        
+        if headers != None:
+            _headers = _client.headers
+            _headers.update(headers)
+            if method == "HEAD": _res = await _client.head(url, headers=_headers)
+            elif method == "POST": _res = await _client.post(url, data=data, headers=_headers)
+            else: _res = await _client.get(url, headers=_headers)
+        else:
+            if method == "HEAD": _res = await _client.head(url)
+            elif method == "POST": _res = await _client.post(url, data=data)
+            else: _res = await _client.get(url)
+        print(_client.headers)
         if need_close: await _client.close()
         
         if raw: return _res

@@ -3,7 +3,7 @@ from configs import *
 from modules import Json
 
 from aiohttp import ClientSession
-from asyncio import sleep as a_sleep
+from asyncio import sleep as a_sleep, create_task, gather
 from os.path import split as ossplit
 from traceback import format_exception
 from typing import Optional
@@ -26,7 +26,7 @@ def retouch_name(name: str) -> str:
         修飾後字串。
     """
     for char in BAN_CHAR: name = name.replace(char, " ")
-    return name.strip()
+    return name.strip(_STRIP)
 
 class MyselfAnime:
     EPS_NAME: str # 集數名稱
@@ -77,6 +77,14 @@ class MyselfAnime:
         return f"<{_class_name} TID={self.TID} VID={self.VID} episode-name=\"{self.EPS_NAME}\">"
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def __eq__(self, __o: object) -> bool:
+        if type(__o) != self.__class__: return False
+        try:
+            if __o.TID != self.TID: return False
+            if __o.VID != self.VID: return False
+            return True
+        except: return False
 
 class MyselfAnimeTable:
     URL: str                     # 網址
@@ -137,10 +145,9 @@ class MyselfAnimeTable:
     
     def __str__(self) -> str:
         _class_name = f"<{self.__module__}.MyselfAnimeTable>"
-        data = []
+        data = [f"update={self.updated}",]
         if self.updated:
             data += [
-                f"updated=True",
                 f"name=\"{self.NAME}\"",
                 f"animate-type=\"{self.ANI_TYPE}\"",
                 f"premiere-date=\"{self.PRE_DATE}\"",
@@ -153,12 +160,19 @@ class MyselfAnimeTable:
                 f"video-list={self.VIDEO_LIST}"
             ]
         else:
-            data = ["updated=False"]
             if hasattr(self, "NAME"): data.append(f"name={self.NAME}")
         _data_text = " ".join(data)
         return f"<{_class_name} TID={self.TID} URL=\"{self.URL}\" <{_data_text}>>"
     def __repr__(self) -> str:
         return self.__str__()
+    
+    def __eq__(self, __o: object) -> bool:
+        if type(__o) != self.__class__: return False
+        try:
+            if __o.URL != self.URL: return False
+            if __o.updated != self.updated: return False
+            return True
+        except: return False
 
 class Myself:
     @staticmethod
@@ -184,6 +198,7 @@ class Myself:
                 _week_table = _soup.select("#tabSuCvYn div.module.cl.xl.xl1") # 每周更新列表
 
                 result: list[list[tuple[MyselfAnimeTable, str]]] = []
+                if update: tasks = []
                 for _index, _tag in enumerate(_week_table, 0):
                     result.append([])
                     for _anime_tag in _tag.select("a"):
@@ -192,12 +207,15 @@ class Myself:
                         _update_text = _anime_tag.find_next("span").text.strip()
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
-                        if update: await _anime_table.update(_client)
+                        if update: tasks.append(
+                            create_task(_anime_table.update(_client))
+                        )
                         result[_index].append((
                             _anime_table,
                             _update_text
                         ))
-
+                if update:
+                    await gather(*tasks)
                 if need_close: await _client.close()
                 return result
             except Exception as _exc:
@@ -232,6 +250,7 @@ class Myself:
                 """
 
                 result: dict[str, list[MyselfAnimeTable]] = {}
+                if update: tasks = []
                 for _season in _season_table:
                     _season_title = _season.select_one("span.titletext").text
                     _season_list = []
@@ -240,11 +259,14 @@ class Myself:
                         _anime_name = _anime_tag.text.strip()
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
-                        if update: await _anime_table.update(_client)
+                        if update: tasks.append(
+                            create_task(_anime_table.update(_client))
+                        )
                         _season_list.append(_anime_table)
 
                     result[_season_title] = _season_list.copy()
-                    
+                if update:
+                    await gather(*tasks)
                 if need_close: await _client.close()
                 return result
             except Exception as _exc:
@@ -291,6 +313,7 @@ class Myself:
 
                 result = []
                 _walked_page = 0
+                if update: tasks = []
                 while True:
                     _anime_list = _soup.select("li.pbw a[href*=tid]")
                     for _anime_tag in _anime_list:
@@ -299,7 +322,9 @@ class Myself:
                         _anime_name = _anime_tag.text.strip()
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
-                        if update: await _anime_table.update(_client)
+                        if update: tasks.append(
+                            create_task(_anime_table.update(_client))
+                        )
                         result.append(_anime_table)
                     _next_page = _soup.select_one("a.nxt")
                     _walked_page += 1
@@ -307,7 +332,8 @@ class Myself:
                         break
                     _res = await requests(urljoin(MYSELF_URL, _next_page["href"]), _client)
                     _soup = BeautifulSoup(_res, features="html.parser")
-                
+                if update:
+                    await gather(*tasks)
                 if need_close: await _client.close()
                 return result
             except Exception as _exc:
