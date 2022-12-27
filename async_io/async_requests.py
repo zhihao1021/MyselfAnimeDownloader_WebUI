@@ -56,7 +56,7 @@ async def requests(
             if method == "HEAD": _res = await _client.head(url)
             elif method == "POST": _res = await _client.post(url, data=data)
             else: _res = await _client.get(url)
-        print(_client.headers)
+
         if need_close: await _client.close()
         
         if raw: return _res
