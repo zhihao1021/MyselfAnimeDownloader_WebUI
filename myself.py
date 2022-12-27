@@ -58,13 +58,15 @@ class MyselfAnime:
         if _ws == None:
             _ws = await ws_connect(
                 uri="wss://v.myself-bbs.com/ws",
-                origin="https://v.myself-bbs.com",
+                # origin="https://v.myself-bbs.com",
                 user_agent_header=UA,
-                open_timeout=TIMEOUT
+                open_timeout=TIMEOUT,
             )
             need_close = True
         await _ws.send(Json.dumps({"tid": self.TID, "vid": self.VID, "id": ""}))
-        _data: dict = Json.loads(await _ws.recv())
+        _res = await _ws.recv()
+        print(_res)
+        _data: dict = Json.loads(_res)
 
         m3u8_file = urljoin("https://", _data["video"])
         m3u8_server = ossplit(m3u8_file)[0]
