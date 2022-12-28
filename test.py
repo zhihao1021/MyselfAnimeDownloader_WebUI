@@ -1,30 +1,30 @@
-from asyncio import new_event_loop, create_task, gather, sleep as a_sleep
+from anime_module import Myself, M3U8
+
+from asyncio import new_event_loop, all_tasks
 from time import sleep
 from threading import Thread
 
-class AsymcTest:
-    def __init__(self) -> None:
-        self.i = 0
+async def main():
+    res = await Myself.weekly_update()
+    anime_table = res[-1][-2][0]
+    await anime_table.update()
+    anime = anime_table.VIDEO_LIST[0]
+    _host, _file = await anime.get_m3u8_url()
 
-    def thr_job(self):
-        loop = new_event_loop()
-        loop.run_until_complete(self.main())
+    downloader = M3U8(
+        _host,
+        _file,
+        "test"
+    )
+    return downloader
 
-    async def async_job(self):
-        for _ in range(10):
-            await a_sleep(1)
-            self.i += 1
+loop = new_event_loop()
+downloader = loop.run_until_complete(main())
 
-    async def main(self):
-        tasks = []
-        for _ in range(5):
-            tasks.append(create_task(self.async_job()))
-        await gather(*tasks)
-
-test = AsymcTest()
-
-Thread(target=test.thr_job).start()
+Thread(target=loop.run_until_complete, args=(downloader.download(10),)).start()
 
 while True:
-    print(test.i)
-    sleep(1.1)
+    print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
+    sleep(0.1)
+
+input("End")
