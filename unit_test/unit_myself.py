@@ -1,5 +1,7 @@
+from anime_module import Myself, MyselfAnimeTable, MyselfAnime, retouch_name
+
+from asyncio import all_tasks
 from unittest import TestCase, IsolatedAsyncioTestCase
-from myself import Myself, MyselfAnimeTable, MyselfAnime, retouch_name
 
 class MyselfTestCase(TestCase):
     def test_retouch_name(self):
@@ -94,6 +96,4 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         _anime = _result_list[0]
         self.assertEqual(type(_result_list), list)
         self.assertEqual(type(_anime), MyselfAnimeTable)
-
-
         

@@ -10,4 +10,4 @@ if __name__ == "__main__":
     test_suit.addTest(TestLoader().loadTestsFromTestCase(MyselfTestCase_Async))
 
     with open("unittest_result.log", mode="w") as log_file:
-        TextTestRunner(stream=log_file, verbosity=3).run(test_suit)
+        TextTestRunner(stream=log_file, verbosity=2).run(test_suit)
