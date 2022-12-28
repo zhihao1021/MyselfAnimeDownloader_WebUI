@@ -10,10 +10,13 @@ HEADERS = {
     "User-Agent": UA
 }
 
-def new_session(cookies: Optional[dict[str, str]]=None):
+def new_session(headers: Optional[dict]=None, cookies: Optional[dict[str, str]]=None):
+    _headers = HEADERS.copy()
+    if headers != None:
+        _headers.update(headers)
     return ClientSession(
-        headers=HEADERS,
-        read_timeout=TIMEOUT,
+        headers=_headers,
+        conn_timeout=TIMEOUT,
         cookies=cookies,
     )
 
@@ -23,8 +26,8 @@ async def requests(
     *,
     data: Any=None,
     method: Literal["GET", "POST", "HEAD"]="GET",
-    cookies: Optional[dict[str, str]]=None,
     headers: Optional[dict]=None,
+    cookies: Optional[dict[str, str]]=None,
     raw: bool=False,
 ) -> Optional[Union[bytes, dict, ClientResponse]]:
     """
@@ -47,7 +50,7 @@ async def requests(
             need_close = True
         
         if headers != None:
-            _headers = _client.headers
+            _headers = _client.headers.copy()
             _headers.update(headers)
             if method == "HEAD": _res = await _client.head(url, headers=_headers)
             elif method == "POST": _res = await _client.post(url, data=data, headers=_headers)
@@ -56,13 +59,15 @@ async def requests(
             if method == "HEAD": _res = await _client.head(url)
             elif method == "POST": _res = await _client.post(url, data=data)
             else: _res = await _client.get(url)
+        
+        if raw: result = _res
+        elif method == "HEAD":
+            result = _res.headers.copy()
+        else: result = await _res.content.read()
 
         if need_close: await _client.close()
         
-        if raw: return _res
-        if method == "HEAD":
-            return dict(_res.headers)
-        return await _res.content.read()
+        return result
     except Exception as _exc:
         _exc_text = "".join(format_exception(_exc))
         MAIN_LOGGER.error(_exc_text)

@@ -1,11 +1,12 @@
 # requests
+aiofiles
+aiohttp
 websockets
+beautifulsoup4
+eventlet
 flask
-orjson
 flask-socketio
 gunicorn
-eventlet
+orjson
 psutil
-beautifulsoup4
-aiohttp
 # py-cord

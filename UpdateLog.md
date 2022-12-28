@@ -21,6 +21,24 @@
 
 ---
 
+## 2022/12/28 `Development Branch`
+```
+---Log---
+1. async_io/async_requests中new_session的Timeout修改為conn_timeout
+2. 補上modules/m3u8.py的註解。
+
+---TODO Detail---
+1. m3u8下載器
+```
+### 2022/12/26 Dev's Diary
+M3U8下載器多一些進度了，主要是找到請求資料需要在標頭中增加`"referer": "https://v.myself-bbs.com/"`，然後居然花了一節課在處理Stream的問題，結果只是因為Session被關掉了😂。
+
+昨天丁丁說Python的List在append的時候，用`data_ = data.append;data_("")`會比較快，太酷了吧。
+
+今天中午又吃雞肉飯😑。
+
+---
+
 ## 2022/12/26 `Development Branch`
 ```
 ---Log---
