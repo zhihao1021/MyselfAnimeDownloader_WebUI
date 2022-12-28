@@ -1,46 +1,30 @@
-# from asyncio import new_event_loop
+from asyncio import new_event_loop, create_task, gather, sleep as a_sleep
+from time import sleep
+from threading import Thread
 
-# async def main():
-#     from async_io import requests
-#     from aiohttp import ClientResponse
-#     from myself import MyselfAnime
+class AsymcTest:
+    def __init__(self) -> None:
+        self.i = 0
 
-#     _anime = MyselfAnime("01", "46195", "001")
-#     _host, _ = await _anime.get_m3u8_url()
-#     print(_host)
+    def thr_job(self):
+        loop = new_event_loop()
+        loop.run_until_complete(self.main())
 
-#     res: ClientResponse = await requests(
-#         # f"{_host}/720p_000.ts",
-#         "https://vpx15.myself-bbs.com/vpx/46195/001/720p_000.ts",
-#         raw=True,
-#         headers={
-#             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0 (Edition GX-CN)"
-#         },
-#     )
-#     print(res.status)
+    async def async_job(self):
+        for _ in range(10):
+            await a_sleep(1)
+            self.i += 1
 
-# if __name__ == "__main__":
-#     [].append
-#     loop = new_event_loop()
-#     loop.run_until_complete(main())
-#     input("End")
+    async def main(self):
+        tasks = []
+        for _ in range(5):
+            tasks.append(create_task(self.async_job()))
+        await gather(*tasks)
 
+test = AsymcTest()
 
-def func():
-    data = []
-    for i in range(1000):
-        data.append(i)
+Thread(target=test.thr_job).start()
 
-def func_():
-    data = []
-    data_ = data.append
-    for i in range(1000):
-        data_(i)
-
-from timeit import timeit
-
-if __name__ == "__main__":
-    print("append():", timeit(func, number=100000), "s")
-    print("data_=append:", timeit(func_, number=100000), "s")
-
-    # http://163.27.13.221/video/高中部/111上/111-1 高三數學 林煜鈞/2022_1220_1800_學測數學.mp4
+while True:
+    print(test.i)
+    sleep(1.1)
