@@ -130,3 +130,7 @@ dmypy.json
 
 config.json
 debug.html
+
+*.mp4
+*.ts
+comp_in
