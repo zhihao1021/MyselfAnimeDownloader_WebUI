@@ -43,4 +43,4 @@ if __name__ == "__main__":
     print("append():", timeit(func, number=100000), "s")
     print("data_=append:", timeit(func_, number=100000), "s")
 
-    
+    # http://163.27.13.221/video/高中部/111上/111-1 高三數學 林煜鈞/2022_1220_1800_學測數學.mp4
