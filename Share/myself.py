@@ -1,8 +1,7 @@
-from async_io import requests, new_session
-from configs import *
-from modules import Json
+from .async_requests import *
 
 from asyncio import sleep as a_sleep, create_task, gather
+from logging import getLogger
 from os.path import split as ossplit
 from traceback import format_exception
 from typing import Optional
@@ -10,11 +9,17 @@ from urllib.parse import parse_qs, urlencode, urljoin
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
+from orjson import dumps, loads
 from websockets.client import connect as ws_connect, WebSocketClientProtocol
+
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)"
+TIMEOUT = 5
 
 _STRIP = " \"\n\r"
 BAN_CHAR = "\\/:*?\"<>|"
 MYSELF_URL = "https://myself-bbs.com"
+
+MYSELF_LOGGER = getLogger("myself")
 
 def retouch_name(name: str) -> str:
     """
@@ -64,11 +69,11 @@ class MyselfAnime:
             )
             need_close = True
         if self.VID.isdigit():
-            await _ws.send(Json.dumps({"tid": self.TID, "vid": self.VID, "id": ""}))
+            await _ws.send(dumps({"tid": self.TID, "vid": self.VID, "id": ""}).decode())
         else:
-            await _ws.send(Json.dumps({"tid": "", "vid": "", "id": self.VID}))
+            await _ws.send(dumps({"tid": "", "vid": "", "id": self.VID}).decode())
         _res = await _ws.recv()
-        _data: dict = Json.loads(_res)
+        _data: dict = loads(_res)
 
         m3u8_file = urljoin("https://", _data["video"])
         m3u8_server = ossplit(m3u8_file)[0]
@@ -113,9 +118,9 @@ class MyselfAnimeTable:
         name: :class:`str`
             在不更新的情形下指定名稱(用於列表)。
         """
-        self.URL = url.strip(_STRIP)   # https://myself-bbs.com/thread-48821-1-1.html
-        _page = url.split("/")[-1]     # thread-48821-1-1.html
-        self.TID = _page.split("-")[1] # 48821
+        self.URL = url.strip(_STRIP)   # https://myself-bbs.com/thread-46195-1-1.html
+        _page = url.split("/")[-1]     # thread-46195-1-1.html
+        self.TID = _page.split("-")[1] # 46195
         if name != None:
             name = name.replace("\r", "")
             self.NAME = name.strip(_STRIP)

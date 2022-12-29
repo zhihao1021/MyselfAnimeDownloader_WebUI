@@ -133,4 +133,5 @@ debug.html
 
 *.mp4
 *.ts
-comp_in
+*.exe
+temp

@@ -1,8 +1,8 @@
-from async_io import new_session, requests
-from configs import *
+from .async_requests import new_session, requests
 
 from asyncio import CancelledError, create_task, current_task, gather, Queue, sleep, Task
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+from logging import getLogger
 from os import makedirs, rename, rmdir, stat, walk
 from os.path import abspath, join, isfile, isdir
 from shutil import rmtree
@@ -13,6 +13,15 @@ from urllib.parse import urljoin, urlparse
 
 from aiofiles import open as a_open
 from aiohttp import ClientSession
+
+TIMEZONE = timezone(timedelta(hours=8))
+
+CONNECTIONS = 10
+RETRY = 5
+TEMP_PATH = "temp"
+FFMPEG_ARGS = ""
+
+MAIN_LOGGER = getLogger("main")
 
 def _ce_dir(dir_path: str):
     _d = 0
@@ -101,7 +110,7 @@ class M3U8:
         
         # 新增下載協程
         self.tasks: list[Task] = []
-        for _ in range(CONS):
+        for _ in range(CONNECTIONS):
             self.tasks.append(create_task(self._download(_ts_urls, _client)))
         # 開始下載
         await gather(*self.tasks, return_exceptions=True)
