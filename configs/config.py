@@ -40,6 +40,7 @@ CONFIG = {
         "retry": 3,
         "zerofill": 2,
         "timeout": 5,
+        "temp_path": "temp",
     },
     "myself": {
         "check_update": 5,
@@ -100,6 +101,7 @@ THRS: int = CONFIG["global"]["threads"]
 RETRY: int = CONFIG["global"]["retry"]
 ZFILL: int = CONFIG["global"]["zerofill"]
 TIMEOUT: float = CONFIG["global"]["timeout"]
+TEMP_PATH: str = CONFIG["global"]["temp_path"]
 
 MYSELF_UPDATE: int = CONFIG["myself"]["check_update"]
 MYSELF_CLASSIFY: bool = CONFIG["myself"]["classify"]

@@ -5,6 +5,7 @@ from traceback import format_exception
 from typing import Any, Literal, Optional, Union
 
 from aiohttp import ClientSession, ClientResponse
+from multidict import CIMultiDictProxy
 
 HEADERS = {
     "User-Agent": UA
@@ -29,7 +30,7 @@ async def requests(
     headers: Optional[dict]=None,
     cookies: Optional[dict[str, str]]=None,
     raw: bool=False,
-) -> Optional[Union[bytes, dict, ClientResponse]]:
+) -> Optional[Union[bytes, CIMultiDictProxy, ClientResponse]]:
     """
     非同步請求。
 
@@ -38,7 +39,7 @@ async def requests(
     method: :class:`Literal["GET", "POST", "HEAD"]`
         請求方法。
     
-    return: :class:`Optional[Union[bytes, dict]]`
+    return: :class:`Optional[Union[bytes, CIMultiDictProxy, ClientResponse]]`
     """
     try:
         method = method.upper()

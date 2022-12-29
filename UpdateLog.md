@@ -1,5 +1,5 @@
 # 開發日誌
-### MyselfAnimeDownloader WebUI開發日誌，最後更新日期`2022/12/25`
+### MyselfAnimeDownloader WebUI開發日誌，最後更新日期`2022/12/29`
 > 這是我第一次寫開發日誌，如果有不清楚的地方還請見諒。
 ---
 
@@ -11,47 +11,51 @@
 
 ## TODO Summary
 > 詳細下一次做甚麼會寫在每次更新的日誌中
-```
+
 1. 新增單元測試(Unit Testing)
-2. 新增m3u8下載器
+2. ~~新增m3u8下載器~~ 2022/12/28
 3. 移植Web UI
 4. 後端重構
 5. 連結SQL Database紀錄下載
-```
 
 ---
 
-## 2022/12/28 `Development Branch`
+## 2022/12/29
+```
+---Log---
+1. M3U8下載器錯誤重試功能完成。
+2. 新增移除暫存資料夾中空資料夾的功能。
+3. 改變檢查資料夾是否存在的時機。
+
+```
+### 2022/12/29 Dev's Diary
+
+
+---
+
+## 2022/12/28
 ```
 ---Log---
 1. async_io/async_requests中new_session的Timeout修改為conn_timeout
 2. 補上modules/m3u8.py的註解。
+3. myself.py單元測試完成。
+4. 修正資料抓取效率。
+5. 修正Websocket傳送的資料。
+6. M3U8下載器完成。
 
----TODO Detail---
-1. m3u8下載器
+# 核心功能重構得差不多了。
+
 ```
-### 2022/12/26 Dev's Diary
-M3U8下載器多一些進度了，主要是找到請求資料需要在標頭中增加`"referer": "https://v.myself-bbs.com/"`，然後居然花了一節課在處理Stream的問題，結果只是因為Session被關掉了😂。
+### 2022/12/28 Dev's Diary
+M3U8下載器完成了，主要是找到請求資料需要在標頭中增加`"referer": "https://v.myself-bbs.com/"`，然後居然花了一節課在處理Stream的問題，結果只是因為Session被關掉了😂。
 
 昨天丁丁說Python的List在append的時候，用`data_ = data.append;data_("")`會比較快，太酷了吧。
 
+今天晚上都在處理測試檔被誤Commit的問題😆，最後是參考[這篇文章](https://blog.darkthread.net/blog/rm-files-from-git-history/)解決的。
+
 今天中午又吃雞肉飯😑。
 
----
-
-## 2022/12/26 `Development Branch`
-```
----Log---
-1. myself.py單元測試完成。
-2. 修正資料抓取效率。
-
----TODO Detail---
-1. m3u8下載器
-```
-### 2022/12/26 Dev's Diary
-隔壁的老師剛剛被國一弄到發飆，好像是他們上課在玩 然後講不聽，而且之前的作業也不交😂。
-
-今天就只有這樣，M3U8下載器做到一半，主要在嘗試Branch。
+現在時間是2022/12/28 23:56 先這樣吧，好像睡覺，寫程式的精神消耗比想像中的大。
 
 ---
 
