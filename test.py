@@ -30,6 +30,8 @@
 from asyncio import new_event_loop, create_task, gather, sleep, get_running_loop, get_event_loop, all_tasks, CancelledError
 from traceback import print_exception
 
+from configs import *
+
 async def test(i):
     try:
         await sleep(i * 10 + 1)
