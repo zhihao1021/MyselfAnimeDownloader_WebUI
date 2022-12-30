@@ -1,0 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat&family=Noto+Sans+TC&family=Open+Sans&display=swap");
+@import url("../fonts/material-symbols.css");
+
+:root {
+    --background-color: 33, 33, 33;
+    --secondground-color: 50, 50, 50;
+    --contrast-color: 230, 230, 230;
+    --primary-color: 90, 90, 90;
+    --second-color: 144, 144, 144;
+    font-family: "Noto Sans TC", sans-serif;
+    /* font-family: 'Open Sans', sans-serif; */
+}
+
+body {
+    background-color: rgb(var(--background-color));
+    margin-top: 80px;
+}
+
+/* .page {
+    margin-top: 72px;
+} */

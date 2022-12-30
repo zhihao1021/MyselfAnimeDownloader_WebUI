@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+        <link rel="icon" href="../static/img/favicon.ico">
+        <link rel="stylesheet" href="../static/css/index.css">
+        <link rel="stylesheet" href="../static/css/top-bar.css">
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="../static/js/index.js"></script>
+        <title>MyselfAnimeDownloader</title>
+    </head>
+    <body onhashchange="hash_change()">
+        <div id="top-bar"></div>
+        <div id="home" class="page"></div>
+        <div id="info" class="page"></div>
+        <div id="setting" class="page"></div>
+        <div id="update" class="page"></div>
+        <div id="player" class="page"></div>
+        <div id="data" class="page"></div>
+        <div id="about" class="page"></div>
+    </body>
+    <script>
+        $("#top-bar").load("/include-html/top-bar.html");
+        document.querySelectorAll(".page").forEach((element)=>{
+            $(element).load(`/include-html/${element.id}.html`)
+        })
+        hash_change();
+    </script>
+</html>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
