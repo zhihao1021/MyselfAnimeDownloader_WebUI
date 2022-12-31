@@ -8,7 +8,7 @@
     width: 100%;
     height: 72px;
     background-color: rgb(var(--secondground-color));
-    box-shadow: 0px 1px 8px 0px black;
+    box-shadow: 0px -15px 8px 16px black;
     user-select: none;
 }
 
@@ -73,6 +73,25 @@
 /* 佔位空白 */
 #top-bar .empty {
     flex: 1;
+}
+
+/* 主題切換 */
+#switch-color {
+    width: 32px;
+    line-height: 32px;
+    font-size: 22px;
+    text-align: center;
+    color: rgb(var(--primary-color));
+    border-radius: 16px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(var(--primary-color));
+    transition: 0.3s;
+    cursor: pointer;
+}
+#switch-color:hover {
+    background-color: rgb(var(--primary-color));
+    color: rgb(var(--contrast-color));
 }
 
 /* 搜尋框 */

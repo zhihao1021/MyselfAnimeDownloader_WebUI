@@ -1,4 +1,4 @@
-from asyncio import all_tasks
+from asyncio import all_tasks, get_event_loop
 import ctypes
 import threading
 from time import sleep
