@@ -3,7 +3,7 @@ from .config import *
 from logging import StreamHandler, getLevelName, Formatter, LogRecord, getLogger, NOTSET
 from os import fspath, listdir, remove, rename, makedirs
 from os.path import abspath, split, splitext, exists, isdir, join
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from io import TextIOWrapper
 from traceback import format_exception, format_stack
 

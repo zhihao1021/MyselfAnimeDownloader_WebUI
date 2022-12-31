@@ -65,9 +65,12 @@
     border-width: 1px;
     border-color: rgb(var(--primary-color));
     transition: 0.3s;
+    cursor: default;
+}
+#home .queue .progress-bar .progress-text .progress-option.act {
     cursor: pointer;
 }
-#home .queue .progress-bar .progress-text .progress-option:hover {
+#home .queue .progress-bar .progress-text .progress-option.act:hover {
     background-color: rgb(var(--primary-color));
 }
 #home .queue .progress-bar .progress {
@@ -95,6 +98,7 @@
     border-radius: 11px;
     background-color: rgb(var(--sec-contrast-color));
     z-index: -1;
+    transition: 0.5s;
 }
 
 #home .system-status {

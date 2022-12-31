@@ -1,44 +1,67 @@
-from anime_module import Myself, M3U8
+from anime_module import Myself, M3U8, VideoQueue
 
-from asyncio import new_event_loop, all_tasks
-from time import sleep
+from asyncio import new_event_loop, all_tasks, gather, create_task
+from time import sleep, time
 from threading import Thread
 
 async def main():
     res = await Myself.weekly_update()
     anime_table = res[-1][-5][0]
     await anime_table.update()
-    anime = anime_table.VIDEO_LIST[0]
-    _host, _file = await anime.get_m3u8_url()
 
-    downloader = M3U8(
-        _host,
-        _file,
-        "test"
-    )
-    print(_host, _file)
-    return downloader
+    ds = []
+    tasks = []
+    for i in range(4):
+        anime = anime_table.VIDEO_LIST[i]
+        tasks.append(create_task(anime.get_m3u8_url()))
+    res = await gather(*tasks)
+    i = 1
+    for _host, _file in res:
+
+        ds.append(M3U8(
+            _host,
+            _file,
+            f"test-{i}"
+        ))
+        i += 1
+        print(_host, _file)
+    return ds
 
 loop = new_event_loop()
-downloader = loop.run_until_complete(main())
+ds: list[M3U8] = loop.run_until_complete(main())
+vq = VideoQueue(2)
 
-Thread(target=loop.run_until_complete, args=(downloader.download(),)).start()
+for d in ds:
+    vq.add(d)
 
-while True:
-    # try:
-        print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
-        sleep(0.1)
-    # except KeyboardInterrupt: break
-downloader.pause()
+timer = time()
 while True:
     try:
-        print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
+        prog = map(lambda x: f"{x.output_name} {format(x.get_progress() * 100, '.2f')}%", ds)
+        print(f"{' '.join(prog)} {format(time() - timer, '.2f')}", end="\r")
         sleep(0.1)
     except KeyboardInterrupt: break
-downloader.resume()
+lis = vq.get_queue()
+vq.upper(lis[2])
+input("KK")
 while True:
-    print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
-    sleep(0.1)
+    try:
+        prog = map(lambda x: f"{x.output_name} {format(x.get_progress() * 100, '.2f')}%", ds)
+        print(f"{' '.join(prog)} {format(time() - timer, '.2f')}", end="\r")
+        sleep(0.1)
+    except KeyboardInterrupt: break
+# downloader.pause()
+# input("PAUSE")
+# while True:
+#     try:
+#         print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
+#         sleep(0.1)
+#     except KeyboardInterrupt: break
+# downloader.resume()
+# input("RESUME")
+# while True:
+#     print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
+#     sleep(0.1)
 
 # from asyncio import new_event_loop, create_task, gather, sleep, get_running_loop, get_event_loop, all_tasks, CancelledError
 # from traceback import print_exception

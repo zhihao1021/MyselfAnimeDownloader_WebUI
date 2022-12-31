@@ -3,7 +3,7 @@
     <hr>
 </div>
 <div class="queue">
-    <div class="progress-bar">
+    <!-- <div class="progress-bar">
         <div class="progress-text">
             <div class="progress-title">Name</div>
             <div class="progress-option ms">pause</div>
@@ -12,8 +12,11 @@
             <div class="progress-option ms">keyboard_arrow_down</div>
         </div>
         <div class="progress" style="--proc: 50">50%</div>
-    </div>
+    </div> -->
 </div>
 <div class="system-status">
 
 </div>
+<script>
+    setInterval(()=>{$.getJSON("/api/download-queue", "", fetch_queue)}, 1000);
+</script>

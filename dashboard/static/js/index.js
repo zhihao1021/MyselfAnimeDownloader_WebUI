@@ -34,7 +34,6 @@ function switch_color() {
 
 function set_color() {
     let color = Cookies.get("color_mode");
-    console.log(color);
     let root = document.querySelector(':root');
     if (color == "1") {
         root.style.setProperty("--background-color",  "255, 255, 255");
