@@ -29,4 +29,10 @@
     <p>About</p>
 </div>
 <div class="empty"></div>
+<div id="switch-color" class="ms" onclick="switch_color();">light_mode</div>
 <input class="search" placeholder="Search...">
+<script>
+    if (Cookies.get("color_mode") == "1") {
+        document.querySelector("#switch-color").textContent = "dark_mode";
+    }
+</script>

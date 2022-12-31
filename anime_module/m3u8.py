@@ -1,7 +1,7 @@
 from async_io import new_session, requests
 from configs import *
 
-from asyncio import CancelledError, create_task, current_task, gather, Queue, sleep, Task
+from asyncio import CancelledError, create_task, current_task, gather, Lock, Queue, sleep, Task
 from datetime import datetime
 from os import makedirs, rename, rmdir, stat, walk
 from os.path import abspath, join, isfile, isdir
@@ -23,7 +23,6 @@ def _ce_dir(dir_path: str):
                 _d += 1
             except: pass
     if _d: _ce_dir(dir_path)
-
 
 class M3U8:
     def __init__(self,
@@ -68,16 +67,28 @@ class M3U8:
         # FFmpeg參數
         self.ffmpeg_args = FFMPEG_ARGS
 
-        self._block_num = 0
-        self._block_progress = []
-        self._exception = None
+        self._block_num = 0       # 區塊數
+        self._block_progress = [] # 區塊進度
+        self._exception = None    # 發生的錯誤
+        self._lock = Lock()       # 協程鎖，暫停下載用
+
+        # 協程列表
+        self.tasks: list[Task] = []
+        # 是否已經開始下載
+        self.started = False
+        # 是否被暫停
+        self._pause = False
+        # 是否被停止
+        self._stop = False
     
     async def download(self):
         """
         開始下載。
         """
+        if self.started: return
         _client = new_session(headers={
-            "referer": "https://v.myself-bbs.com/"
+            "referer": "https://v.myself-bbs.com/",
+            "origin": "https://v.myself-bbs.com",
         })
 
         # 取得m3u8檔案內容
@@ -100,18 +111,27 @@ class M3U8:
                 self._block_num += 1
         
         # 新增下載協程
-        self.tasks: list[Task] = []
         for _ in range(CONS):
             self.tasks.append(create_task(self._download(_ts_urls, _client)))
+        self.tasks.append(create_task(self._lock_task()))
         # 開始下載
-        await gather(*self.tasks, return_exceptions=True)
+        self.started = True
+        res = await gather(*self.tasks, return_exceptions=True)
+        print(res)
 
         await _client.close()
 
         # 如果發生錯誤
         if self._exception != None:
-            MAIN_LOGGER.error(f"M3U8已取消下載`{self.output_name}`，錯誤訊息:{format_exception(self._exception)}")
+            MAIN_LOGGER.error(f"M3U8已取消下載`{self.output_name}`，錯誤訊息:{' '.join(format_exception(self._exception))}")
+            self.started = False
             return
+        # 如果被取消
+        elif self._stop:
+            MAIN_LOGGER.warning(f"M3U8已被取消下載`{self.output_name}`。")
+            self.started = False
+            return
+
 
         # 檢查輸出資料夾是否存在
         if not isdir(self.output_dir):
@@ -125,7 +145,6 @@ class M3U8:
             "-c copy -y",
             "\"" + join(self.output_dir, f"{self.output_name}.mp4") + "\"",
         ]
-        print(" ".join(_ffmpeg_commands))
         _subprocess_res = run(
             " ".join(_ffmpeg_commands),
             shell=False, stdout=DEVNULL, stderr=PIPE
@@ -135,8 +154,8 @@ class M3U8:
                 _subprocess_res.stderr
             )
         else:
-            rmtree(self.temp_dir)
-            _ce_dir(self.temp_dir)
+            self._clean_up()
+        self.started = False
     
     async def _download(self, url_queue: Queue, _client: ClientSession):
         while not url_queue.empty():
@@ -176,18 +195,20 @@ class M3U8:
                     # 開啟檔案
                     async with a_open(_file_path, mode="ab") as _video:
                         async for chunk in _stream.content.iter_chunked(1024):
+                            await self._lock.acquire()
                             # 寫入檔案
                             _write_leng = await _video.write(chunk)
                             # 更新已下載大小
                             _downloaded_size += _write_leng
                             # 更新下載進度
                             self._block_progress[_block_index] = _downloaded_size / _total_leng
+                            self._lock.release()
                     break
                 except CancelledError as _cancelled_error:
                     raise _cancelled_error
                 except Exception as _exception:
                     # 檢查是否超過最大重試次數
-                    if _exception > RETRY:
+                    if _exception_times > RETRY:
                         # 停止所有協程
                         MAIN_LOGGER.error(f"M3U8下載發生錯誤，已達到第 {_exception_times} 次重試，將停止下載，連結:`{_url}`。")
                         self._exception = _exception
@@ -203,7 +224,17 @@ class M3U8:
             rename(_file_path, _finish_file_path)
             # 完成
             self._block_progress[_block_index] = 1
-
+    
+    async def _lock_task(self):
+        _alive = True
+        while _alive:
+            if self._pause:
+                await self._lock.acquire()
+                while self._pause: await sleep(0.1)
+                self._lock.release()
+            await sleep(0.2)
+            _alive = list(map(lambda x: x.done(), self.tasks)).count(False) > 1
+            
     def get_progress(self) -> float:
         """
         取得下載進度: 0~1(以區塊數量計算，非真實數值)。
@@ -214,3 +245,25 @@ class M3U8:
             return 0
 
         return min(1, _total_progress / self._block_num)
+    
+    def pause(self) -> None:
+        self._pause = True
+    
+    def resume(self) -> None:
+        self._pause = False
+    
+    def stop(self, clean: bool=False) -> None:
+        """
+        停止下載。
+
+        clean: :class:`bool`
+            停止後是否清除暫存。
+        """
+        for task in self.tasks:
+            task.cancel("")
+        if clean:
+            self._clean_up()
+    
+    def _clean_up(self) -> None:
+        rmtree(self.temp_dir)
+        _ce_dir(self.temp_dir)

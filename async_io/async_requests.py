@@ -8,7 +8,7 @@ from aiohttp import ClientSession, ClientResponse
 from multidict import CIMultiDictProxy
 
 HEADERS = {
-    "User-Agent": UA
+    "user-agent": UA
 }
 
 def new_session(headers: Optional[dict]=None, cookies: Optional[dict[str, str]]=None):

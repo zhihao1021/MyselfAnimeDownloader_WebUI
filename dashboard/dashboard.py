@@ -1,7 +1,7 @@
 from configs import *
 
 from eventlet import listen, wsgi
-from flask import Flask
+from flask import Flask, render_template
 from flask_socketio import SocketIO
 
 
@@ -17,3 +17,16 @@ class Dashboard:
             self.app,
             WEB_LOGGER
         )
+
+    @app.route("/")
+    def index():
+        return render_template("index.html")
+    
+    @app.route("/include-html/<filename>")
+    def include_html(filename):
+        try: return render_template(filename)
+        except: return ""
+    
+    @app.route("/api/")
+    def api_():
+        pass
