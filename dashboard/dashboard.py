@@ -1,4 +1,6 @@
 from configs import *
+from modules import Json
+from swap import VIDEO_QUEUE
 
 from eventlet import listen, wsgi
 from flask import Flask, render_template
@@ -27,6 +29,13 @@ class Dashboard:
         try: return render_template(filename)
         except: return ""
     
-    @app.route("/api/")
-    def api_():
-        pass
+    @app.route("/api/download-queue")
+    def api_download_queue():
+        _queue_dict = VIDEO_QUEUE._downloader_dict
+        _result = {}
+        for _downloader_id, _downloader in _queue_dict.items():
+            _result[_downloader_id] = {
+                "name": f"{_downloader.output_name} - {_downloader.status()}",
+                "progress": _downloader.get_progress()
+            }
+        return _result
