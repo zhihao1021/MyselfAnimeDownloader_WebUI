@@ -4,7 +4,7 @@ from modules import Thread
 from swap import VIDEO_QUEUE
 from time import sleep
 
-from asyncio import create_task, gather, set_event_loop_policy, WindowsSelectorEventLoopPolicy
+from asyncio import create_task, gather, set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
 from platform import system
 
 async def m3u8s():
@@ -28,9 +28,9 @@ if __name__ == "__main__":
     dashboard_thr = Thread(target=dashboard.run)
     dashboard_thr.start()
 
-    # loop = new_event_loop()
-    # ds: list[M3U8] = loop.run_until_complete(m3u8s())
-    # for d in ds: VIDEO_QUEUE.add(d)
+    loop = new_event_loop()
+    ds: list[M3U8] = loop.run_until_complete(m3u8s())
+    for d in ds: VIDEO_QUEUE.add(d)
 
     while True:
         try:

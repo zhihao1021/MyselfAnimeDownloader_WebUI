@@ -158,11 +158,8 @@ class VideoQueue:
         except ValueError: return
         if _index == 0: return
 
-        _new_queue_list = deepcopy(self._queue_list)
-        _new_queue_list[_index] = self._queue_list[_index - 1]
-        _new_queue_list[_index - 1] = self._queue_list[_index]
+        self._queue_list[_index], self._queue_list[_index-1] = self._queue_list[_index-1], self._queue_list[_index]
 
-        self._queue_list = _new_queue_list
         self._after_update()
     
     def lower(self, downloader_id: str):
@@ -176,9 +173,6 @@ class VideoQueue:
         except ValueError: return
         if _index == len(self._queue_list) - 1: return
 
-        _new_queue_list = deepcopy(self._queue_list)
-        _new_queue_list[_index] = self._queue_list[_index + 1]
-        _new_queue_list[_index + 1] = self._queue_list[_index]
+        self._queue_list[_index], self._queue_list[_index+1] = self._queue_list[_index+1], self._queue_list[_index]
 
-        self._queue_list = _new_queue_list
         self._after_update()

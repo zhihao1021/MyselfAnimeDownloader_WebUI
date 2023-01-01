@@ -94,6 +94,11 @@ class Dashboard:
     # 搜尋
     @app.route("/api/search", methods=["POST", "GET"])
     def api_search():
+        def map_animetable(animetable: MyselfAnimeTable):
+            _result = animetable.__dict__
+            for _index, _anime in enumerate(_result["VIDEO_LIST"]):
+                _result["VIDEO_LIST"][_index] = _anime.__dict__
+            return _result
         if request.is_json:
             data = request.get_json()
         else:
@@ -103,21 +108,22 @@ class Dashboard:
         _keyword = data.get("keyword").strip()
         try:
             loop = get_event_loop()
-            if loop.is_closed():
-                loop = new_event_loop()
-        except:
-            loop = new_event_loop()
+            if loop.is_closed(): loop = new_event_loop()
+        except: loop = new_event_loop()
         if MYSELF_URL in _keyword:
+            # 如果搜尋連結
             _anime_table = MyselfAnimeTable(_keyword)
             try:
                 loop.run_until_complete(_anime_table.update())
-                _anime_dict = _anime_table.__dict__
-                for _index, _anime in enumerate(_anime_dict["VIDEO_LIST"]):
-                    _anime_dict["VIDEO_LIST"][_index] = _anime.__dict__
-                loop.close()
+                _anime_dict = map_animetable(_anime_table)
                 return {
                     "type": "anime",
                     "data": _anime_dict
                 }
             except: pass
-        return {"hello": "Hello"}
+        _search_result = loop.run_until_complete(Myself.search(_keyword))
+        _search_result = list(map(map_animetable, _search_result))
+        return {
+            "type": "search",
+            "data": _search_result
+        }
