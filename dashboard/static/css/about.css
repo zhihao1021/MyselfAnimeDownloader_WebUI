@@ -10,13 +10,28 @@
     height: 100%;
 }
 
-#about .info-box .title {
+#about .title {
     font-size: 36px;
     color: rgb(var(--contrast-color));
 }
-#about .info-box hr {
+#about hr {
     height: 0px;
     width: calc(100% - 2px);
     border-color: rgb(var(--secondground-color));
     border-style: solid;
+}
+#about .info {
+    height: 40px;
+    color: rgb(var(--contrast-color));
+    display: flex;
+    justify-content: flex-start;
+}
+#about .info p {
+    font-size: 22px;
+    margin: auto 4px;
+}
+#about .info a {
+    font-size: 22px;
+    margin: auto 4px;
+    color: rgb(var(--contrast-color));
 }

@@ -104,7 +104,7 @@ class M3U8:
             makedirs(self.temp_dir)
         # 解析m3u8檔案
         _ts_urls = Queue()
-        with open(join(self.temp_dir, "comp_in"), mode="w") as _comp_file:
+        async with a_open(join(self.temp_dir, "comp_in"), mode="w") as _comp_file:
             for _line in m3u8_file_content.split("\n"):
                 if not _line.endswith(".ts"): continue
                 # 範例: 720p_000.ts
