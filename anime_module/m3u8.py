@@ -93,6 +93,8 @@ class M3U8:
             "origin": "https://v.myself-bbs.com",
         })
         self.started = True
+        self._stop = False
+        MAIN_LOGGER.info(f"M3U8: 已開始下載`{self.output_name}`。")
 
         # 取得m3u8檔案內容
         _res = await requests(self.m3u8_file, _client)
@@ -114,6 +116,7 @@ class M3U8:
                 self._block_num += 1
         
         while True:
+            if self._lock.locked(): self._lock.release()
             # 新增下載協程
             for _ in range(CONS):
                 self.tasks.append(create_task(self._download(_ts_urls, _client)))
@@ -131,7 +134,7 @@ class M3U8:
 
         # 如果發生錯誤
         if self._exception != None:
-            MAIN_LOGGER.error(f"M3U8: 已取消下載`{self.output_name}`，錯誤訊息:{' '.join(format_exception(self._exception))}")
+            MAIN_LOGGER.error(f"M3U8: 已取消下載`{self.output_name}`，錯誤訊息:{''.join(format_exception(self._exception))}")
             self.started = False
             self.finish = True
             return
@@ -289,7 +292,7 @@ class M3U8:
         return min(1, _total_progress / self._block_num)
     
     def pause(self) -> None:
-        self._pause = True
+        if self.started: self._pause = True
     
     def resume(self) -> None:
         self._pause = False
@@ -304,7 +307,6 @@ class M3U8:
         if clean: self._stop = True
         else: self._stop = None
         for task in self.tasks:
-            if task.done(): continue
             task.cancel("")
         if clean:
             self._clean_up()

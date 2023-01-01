@@ -32,6 +32,7 @@
     margin: 0px;
     display: flex;
     flex-direction: column;
+    user-select: none;
 }
 
 #home .queue .progress-bar {
@@ -60,6 +61,7 @@
     line-height: 26px;
     font-size: 18px;
     text-align: center;
+    color: rgb(var(--primary-color));
     border-radius: 13px;
     border-style: solid;
     border-width: 1px;
@@ -68,6 +70,7 @@
     cursor: default;
 }
 #home .queue .progress-bar .progress-text .progress-option.act {
+    color: rgb(var(--contrast-color));
     cursor: pointer;
 }
 #home .queue .progress-bar .progress-text .progress-option.act:hover {

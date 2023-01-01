@@ -1,6 +1,9 @@
 # MyselfAnimeDownloader_WebUI
 Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/hgalytoby/MyselfAnimeDownloader
 
+## 注意!!
+這個專案還沒完成，所以沒辦法執行
+
 ## 運行依賴
 1.此專案依賴於`FFmpeg`，請確保在電腦環境中有`FFmpeg`。
 

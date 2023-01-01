@@ -1,13 +1,3 @@
-# API Reference
-
-## 使用說明
-詳細的使用辦法請直接看程式碼，註解我都有打~~打註解好累XD~~，底下這裡僅會提供基礎的範例。
-
-## 注意事項
-這一組套件用於非同步(Async)環境的，對於Python的非同步執行要有一定了解才能最大化運作效率，如果要用於一般同步執行，可以參考[@hgalytoby]寫的[專案](https://github.com/hgalytoby/MyselfAnimeDownloader)，裡面有提供一般用於同步環境的Myself Methods。
-
-## Example
-```python
 from myself import Myself
 from m3u8 import M3U8
 from threading import Thread
@@ -55,6 +45,5 @@ if __name__ == "__main__":
         print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
         sleep(0.1)
     print("Download Finish")
-
-
-```
+    # 等待合成完成
+    thread.join()

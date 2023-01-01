@@ -14,7 +14,6 @@ from websockets.client import connect as ws_connect, WebSocketClientProtocol
 
 _STRIP = " \"\n\r"
 BAN_CHAR = "\\/:*?\"<>|"
-MYSELF_URL = "https://myself-bbs.com"
 
 def retouch_name(name: str) -> str:
     """
@@ -228,9 +227,9 @@ class Myself:
                 await a_sleep(5)
 
     @staticmethod
-    async def finish_list(update: bool=False, _client: Optional[ClientSession]=None) -> dict[str, list[MyselfAnimeTable]]:
+    async def year_list(update: bool=False, _client: Optional[ClientSession]=None) -> dict[str, list[MyselfAnimeTable]]:
         """
-        取得完結列表頁面的動漫資訊。
+        取得年分列表頁面的動漫資訊。
 
         update: :class:`bool`
             是否更新動畫資訊(如果為否，則只會有名稱)。
@@ -277,22 +276,83 @@ class Myself:
                 _exc_text = "".join(format_exception(_exc))
                 MYSELF_LOGGER.error(_exc_text)
                 await a_sleep(5)
+    
+    @staticmethod
+    async def finish_list(start_page: int=1, page_num: int=100, update: bool=False, _client: Optional[ClientSession]=None) -> list[MyselfAnimeTable]:
+        """
+        取得年分列表頁面的動漫資訊。
+
+        start_page: :class:`int`
+            開始的頁數。
+        page_num: :class:`int`
+            要抓的頁數。
+        update: :class:`bool`
+            是否更新動畫資訊(如果為否，則只會有名稱)。
+            備註:極度不建議設為True，不然他會把所有完結動畫頁面都爬過一次。
+
+        return: :class:`list[MyselfAnimeTable]`
+        """
+        need_close = False
+        if _client == None:
+            _client = new_session()
+            need_close = True
+        start_page = max(1, start_page)
+        page_num = max(1, page_num)
+        while True:
+            try:
+                _res = await requests(urljoin(MYSELF_URL, "forum-113-1.html"), _client)
+                _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
+                _total_page = int(_soup.select_one("label span")["title"].split(" ")[1])
+                start_page = min(_total_page, start_page)
+
+                if start_page > 1:
+                    _res = await requests(urljoin(MYSELF_URL, f"forum-113-{start_page}.html"), _client)
+                    _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
+
+                result = []
+                _walked_page = 0
+                if update: tasks = []
+                while True:
+                    _anime_list = _soup.select("ul.ml.mlt.mtw.cl h3 a")
+                    for _anime_tag in _anime_list:
+                        _anime_url = urljoin(MYSELF_URL, _anime_tag["href"])
+                        _anime_name = _anime_tag.text.strip()
+
+                        _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
+                        if update: tasks.append(
+                            create_task(_anime_table.update(_client))
+                        )
+                        result.append(_anime_table)
+                    _next_page = _soup.select_one("a.nxt")
+                    _walked_page += 1
+                    if _next_page == None or _walked_page >= page_num:
+                        break
+                    _res = await requests(urljoin(MYSELF_URL, _next_page["href"]), _client)
+                    _soup = BeautifulSoup(_res, features="html.parser")
+                if update:
+                    await gather(*tasks)
+                if need_close: await _client.close()
+                return result
+            except Exception as _exc:
+                _exc_text = "".join(format_exception(_exc))
+                MYSELF_LOGGER.error(_exc_text)
+                await a_sleep(5)
 
     @staticmethod
-    async def search(keyword: str, page_num: int=25, start_page: int=1, update: bool=False, _client: Optional[ClientSession]=None) -> list[MyselfAnimeTable]:
+    async def search(keyword: str, start_page: int=1, page_num: int=25, update: bool=False, _client: Optional[ClientSession]=None) -> list[MyselfAnimeTable]:
         """
         搜尋動漫。
 
         keyword: :class:`str`
             關鍵字。
-        page_num: :class:`int`
-            要搜尋的頁數。
         start_page: :class:`int`
             開始搜尋的頁數。
+        page_num: :class:`int`
+            要搜尋的頁數。
         update: :class:`bool`
             是否更新動畫資訊(如果為否，則只會有名稱)。
 
-        return: :class:`list`
+        return: :class:`list[MyselfAnimeTable]`
         """
         need_close = False
         if _client == None:

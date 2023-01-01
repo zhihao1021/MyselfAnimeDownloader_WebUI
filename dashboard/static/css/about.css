@@ -1,0 +1,22 @@
+#about {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+#about .info-box {
+    width: 640px;
+    height: 100%;
+}
+
+#about .info-box .title {
+    font-size: 36px;
+    color: rgb(var(--contrast-color));
+}
+#about .info-box hr {
+    height: 0px;
+    width: calc(100% - 2px);
+    border-color: rgb(var(--secondground-color));
+    border-style: solid;
+}
