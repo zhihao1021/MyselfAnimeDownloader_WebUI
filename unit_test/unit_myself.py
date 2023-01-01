@@ -1,6 +1,5 @@
 from anime_module import Myself, MyselfAnimeTable, MyselfAnime, retouch_name
 
-from asyncio import all_tasks
 from unittest import TestCase, IsolatedAsyncioTestCase
 
 class MyselfTestCase(TestCase):
@@ -76,9 +75,9 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         self.assertEqual(type(_anime), MyselfAnimeTable)
         self.assertEqual(type(_name), str)
     
-    async def test_Myself_finish_list(self):
+    async def test_Myself_year_list(self):
         _result: dict[str, list[MyselfAnimeTable]]
-        _result = await Myself.finish_list()
+        _result = await Myself.year_list()
 
         _all_year_dict = _result
         _year_key, _year_result = list(_all_year_dict.items())[0]
@@ -87,6 +86,16 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         self.assertEqual(type(_year_key), str)
         self.assertEqual(type(_year_result), list)
         self.assertEqual(type(_anime), MyselfAnimeTable)
+    
+    async def test_Myself_finish_list(self):
+        _result: list[MyselfAnimeTable]
+        _result = await Myself.finish_list(1, 5)
+
+        _result_list = _result
+        _anime = _result_list[0]
+        self.assertEqual(type(_result_list), list)
+        self.assertEqual(type(_anime), MyselfAnimeTable)
+        self.assertEqual(100, len(_result_list))
     
     async def test_Myself_search(self):
         _result: list[MyselfAnimeTable]

@@ -2,8 +2,9 @@ from .m3u8 import M3U8
 
 from modules import Thread
 
-from asyncio import create_task, gather, new_event_loop, sleep
+from asyncio import gather, new_event_loop, sleep
 from copy import deepcopy
+from time import sleep as b_sleep
 from typing import Optional
 
 from uuid import uuid1
@@ -63,6 +64,7 @@ class VideoQueue:
         # 如果下載完成
         if _downloader.finish:
             self._queue_list.remove(_downloader_id)
+            Thread(target=self._delete_job, args=(_downloader_id,)).start()
     
     def _after_update(self):
         _should_run = self._queue_list[:self._thread_num]
@@ -70,6 +72,10 @@ class VideoQueue:
             if _running in _should_run: continue
             _downloader = self._downloader_dict[_running]
             _downloader.stop()
+    
+    def _delete_job(self, downloader_id: str):
+        b_sleep(60)
+        del self._downloader_dict[downloader_id]
 
     def add(self, downloader: M3U8) -> None:
         """
@@ -93,6 +99,10 @@ class VideoQueue:
         """
         _downloader = self._downloader_dict.get(downloader_id)
         if _downloader == None: return
+        # 尚未開始
+        if _downloader.status_code() == 4:
+            del self._downloader_dict[downloader_id]
+            return
 
         # 正在下載中
         if _downloader.started:

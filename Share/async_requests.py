@@ -47,7 +47,7 @@ async def requests(
         method = method.upper()
         need_close = False
 
-        if type(data) in [dict, list]: data = dumps(data).decode()
+        if type(data) in [dict, list]: data = dumps(data)
         if _client == None:
             _client = new_session(cookies)
             need_close = True

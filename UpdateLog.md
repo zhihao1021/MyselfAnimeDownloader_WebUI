@@ -21,6 +21,21 @@
 
 ---
 
+## 2023/1/2
+```
+---Log---
+1. 修正Myself method中finish_list的部分應為year_list。
+2. 新增Myself method - finish_list。
+3. 更新Myself的單元測試。
+4. Web UI主頁完成。
+5. API查詢貯列功能完成
+6. 貯列管理器功能完成。
+```
+### 2023/1/2 Dev's Diary
+今天(1/1)睡到早上11點才起床，好久沒睡到這麼晚了。
+
+---
+
 ## 2023/1/1
 ```
 ---Log---

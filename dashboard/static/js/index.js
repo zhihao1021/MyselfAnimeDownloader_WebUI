@@ -39,16 +39,20 @@ function set_color() {
         root.style.setProperty("--background-color",  "255, 255, 255");
         root.style.setProperty("--secondground-color",  "230, 230, 230");
         root.style.setProperty("--contrast-color",  "0, 0, 0");
-        root.style.setProperty("--sec-contrast-color",  "255, 130, 0");
+        root.style.setProperty("--sec-contrast-color",  "0, 130, 255");
         root.style.setProperty("--primary-color",  "150, 150, 150");
         root.style.setProperty("--second-color",  "60, 60, 60");
     }
     else {
         root.style.setProperty("--background-color",  "33, 33, 33");
         root.style.setProperty("--secondground-color",  "50, 50, 50");
-        root.style.setProperty("--contrast-color",  "230, 230, 230");
+        root.style.setProperty("--contrast-color",  "255, 255, 255");
         root.style.setProperty("--sec-contrast-color",  "255, 130, 0");
         root.style.setProperty("--primary-color",  "90, 90, 90");
         root.style.setProperty("--second-color",  "144, 144, 144");
     }
+}
+
+function search(keyword) {
+
 }
