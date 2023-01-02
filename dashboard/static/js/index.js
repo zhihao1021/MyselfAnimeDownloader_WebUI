@@ -3,6 +3,13 @@ function onload() {
     set_color();
 }
 
+const hsl2rgb_tex = (h,s,l) => {
+    h %= 360;
+   let a = s * Math.min(l,1-l);
+   let f = (n,k=(n+h/30)%12) => l - a*Math.max(Math.min(k-3,9-k,1),-1);
+   return `${f(0)*255}, ${f(8)*255}, ${f(4)*255}`;
+}
+
 function hash_change() {
     let hash = location.hash.slice(1), finded=false;
     document.querySelectorAll(".page").forEach((element)=>{
@@ -39,7 +46,7 @@ function set_color() {
         root.style.setProperty("--background-color",  "255, 255, 255");
         root.style.setProperty("--secondground-color",  "230, 230, 230");
         root.style.setProperty("--contrast-color",  "0, 0, 0");
-        root.style.setProperty("--sec-contrast-color",  "0, 130, 255");
+        root.style.setProperty("--sec-contrast-color",  "100, 161, 222");
         root.style.setProperty("--primary-color",  "150, 150, 150");
         root.style.setProperty("--second-color",  "60, 60, 60");
     }
@@ -55,4 +62,30 @@ function set_color() {
 
 function search(keyword) {
 
+}
+
+function b_1(h=0) {
+    h++;
+    h %= 360;
+    let res = "";
+    for (let i = 0; i < 40; i++) {
+        res += `hsl(${(h + 9 * i) % 360}, 100%, 50%, 0.8), `;
+    }
+    res += `hsl(${h}, 100%, 50%, 0.8)`;
+    let root = document.querySelector(':root');
+    root.style.setProperty("--b",  res);
+    document.querySelector("#switch-q").remove();
+    setTimeout(b_2, 100);
+}
+
+function b_2(h=0) {
+    let root = document.querySelector(':root');
+    h %= 360;
+    root.style.setProperty("--background-color",  hsl2rgb_tex(h, 1, 0.5));
+    root.style.setProperty("--secondground-color",  hsl2rgb_tex(h + 270, 1, 0.5));
+    root.style.setProperty("--contrast-color",  hsl2rgb_tex(h + 180, 1, 0.5));
+    root.style.setProperty("--sec-contrast-color",  hsl2rgb_tex(h + 135, 1, 0.5));
+    root.style.setProperty("--primary-color",  hsl2rgb_tex(h + 90, 1, 0.5));
+    root.style.setProperty("--second-color",  hsl2rgb_tex(h + 45, 1, 0.5));
+    setTimeout(b_2, 100, h+20);
 }

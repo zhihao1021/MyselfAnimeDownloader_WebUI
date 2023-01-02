@@ -109,7 +109,7 @@ class M3U8:
                 if not _line.endswith(".ts"): continue
                 # 範例: 720p_000.ts
                 # 寫入FFmpeg合成檔
-                _comp_file.write(f"file 'f_{_line}'\n")
+                await _comp_file.write(f"file 'f_{_line}'\n")
                 # 加入貯列
                 _ts_urls.put_nowait(_line)
                 # 更新區塊數量

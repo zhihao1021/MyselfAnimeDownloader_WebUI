@@ -49,6 +49,49 @@ body {
     background-color: rgb(var(--secondground-color));
 }
 
-/* .page {
-    margin-top: 72px;
-} */
+/* 以下無義 */
+
+.b {
+    background-image: linear-gradient(var(--b));
+    background-size: 100% 200%;
+    background-repeat: repeat-y;
+    animation-name: b;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes b {
+    0% {
+        background-position-y: 0%;
+    }
+    50% {
+        background-position-y: 100%;
+    }
+    100% {
+        background-position-y: 200%;
+    }
+}
+
+.b_2 {
+    background-image: linear-gradient(90deg, var(--b));
+    background-size: 200% 100%;
+    background-repeat: repeat-x;
+    animation-name: b_2;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-direction: reverse;
+}
+
+@keyframes b_2 {
+    0% {
+        background-position-x: 0%;
+    }
+    50% {
+        background-position-x: 100%;
+    }
+    100% {
+        background-position-x: 200%;
+    }
+}

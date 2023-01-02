@@ -94,6 +94,26 @@
     color: rgb(var(--contrast-color));
 }
 
+#switch-q {
+    width: 32px;
+    line-height: 32px;
+    font-size: 22px;
+    text-align: center;
+    color: transparent;
+    border-radius: 16px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: transparent;
+    transition: 0.3s;
+    cursor: pointer;
+    margin: auto 12px;
+}
+#switch-q:hover {
+    border-color: rgb(var(--primary-color));
+    background-color: rgb(var(--primary-color));
+    color: rgb(var(--contrast-color));
+}
+
 /* 搜尋框 */
 #top-bar .search {
     margin: auto 12px;

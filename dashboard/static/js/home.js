@@ -5,7 +5,7 @@ const _progress_bar_inner = '<div class="progress-text">\n\
     <div class="progress-option ms act" onclick="_modify(this, event);">keyboard_arrow_up</div>\n\
     <div class="progress-option ms act" onclick="_modify(this, event);">keyboard_arrow_down</div>\n\
 </div>\n\
-<div class="progress" style="--proc: 0">0%</div>\n';
+<div class="progress b_2" style="--proc: 0">0%</div>\n';
 
 // 創造貯列元素
 function gen_queue(id) {
