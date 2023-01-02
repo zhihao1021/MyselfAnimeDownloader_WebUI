@@ -90,6 +90,7 @@
     text-align: center;
     color: rgb(var(--contrast-color));
     overflow: hidden;
+    z-index: 2;
 }
 #home .queue .progress-bar .progress::before {
     content: "";
@@ -102,6 +103,11 @@
     background-color: rgb(var(--sec-contrast-color));
     z-index: -1;
     transition: 0.5s;
+    background-image: linear-gradient(-90deg, var(--b_1));
+    animation-name: b_3;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
 }
 
 #home .system-status {

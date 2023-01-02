@@ -34,4 +34,8 @@
     font-size: 22px;
     margin: auto 4px;
     color: rgb(var(--contrast-color));
+    transition: 0.3s;
+}
+#about .info a:hover {
+    color: rgb(var(--sec-contrast-color));
 }
