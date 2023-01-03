@@ -1,9 +1,9 @@
-from anime_module import Myself, MyselfAnimeTable
+from anime_module import gen_dir_name, gen_file_name, M3U8, Myself, MyselfAnimeTable
+from anime_module.myself import MyselfAnime
 from configs import *
-from modules import Json
 from swap import VIDEO_QUEUE
 
-from asyncio import new_event_loop, get_event_loop
+from asyncio import create_task, gather, get_event_loop, new_event_loop
 
 from eventlet import listen, wsgi
 from flask import Flask, render_template, request
@@ -106,10 +106,8 @@ class Dashboard:
                 "keyword": request.values.get("keyword"),
             }
         _keyword = data.get("keyword").strip()
-        try:
-            loop = get_event_loop()
-            if loop.is_closed(): loop = new_event_loop()
-        except: loop = new_event_loop()
+
+        loop = new_event_loop()
         if MYSELF_URL in _keyword:
             # 如果搜尋連結
             _anime_table = MyselfAnimeTable(_keyword)
@@ -127,3 +125,34 @@ class Dashboard:
             "type": "search",
             "data": _search_result
         }
+
+    # 下載
+    @app.route("/api/download", methods=["POST"])
+    def api_download():
+        print(request.get_json())
+        if request.is_json:
+            data = request.get_json()
+        else:
+            return "", 400
+
+        _ani_name = data["ani_name"]
+        _episodes = data["episodes"]
+        _tasks = []
+        loop = new_event_loop()
+        for _episode_data in _episodes:
+            _tasks.append(MyselfAnime(
+                _ani_name,
+                _episode_data["tid"],
+                _episode_data["vid"]
+            ).get_m3u8_url())
+
+        _m3u8s = loop.run_until_complete(gather(*_tasks))
+        for _m3u8_info, _episode in zip(_m3u8s, _episodes):
+            _eps_name = gen_file_name(_ani_name, _episode["eps_name"])
+            _downloader = M3U8(
+                *_m3u8_info,
+                _eps_name,
+                gen_dir_name(_ani_name)
+            )
+            VIDEO_QUEUE.add(_downloader)
+        return "", 200

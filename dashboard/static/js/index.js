@@ -3,13 +3,7 @@ function onload() {
     set_color();
 }
 
-const hsl2rgb_tex = (h,s,l) => {
-    h %= 360;
-   let a = s * Math.min(l,1-l);
-   let f = (n,k=(n+h/30)%12) => l - a*Math.max(Math.min(k-3,9-k,1),-1);
-   return `${f(0)*255}, ${f(8)*255}, ${f(4)*255}`;
-}
-
+// 切換頁面
 function hash_change() {
     let hash = location.hash.slice(1), finded=false;
     document.querySelectorAll(".page").forEach((element)=>{
@@ -26,6 +20,7 @@ function hash_change() {
     location.hash = "home"
 }
 
+// 切換主題
 function switch_color() {
     let color = Cookies.get("color_mode");
     if (color == "1") {
@@ -39,6 +34,7 @@ function switch_color() {
     set_color();
 }
 
+// 設置主題
 function set_color() {
     let color = Cookies.get("color_mode");
     let root = document.querySelector(':root');
@@ -60,8 +56,27 @@ function set_color() {
     }
 }
 
+// 搜尋
 function search(keyword) {
+    $.post("/api/search", {"keyword": keyword}, (result)=>{
+        if (result.type == "anime") {
+            update_anime(result.data);
+        }
+        else {
 
+        }
+    })
+    show_page(0);
+    location.hash = "info";
+}
+
+// 以下為彩虹色
+
+const hsl2rgb_tex = (h,s,l) => {
+    h %= 360;
+   let a = s * Math.min(l,1-l);
+   let f = (n,k=(n+h/30)%12) => l - a*Math.max(Math.min(k-3,9-k,1),-1);
+   return `${f(0)*255}, ${f(8)*255}, ${f(4)*255}`;
 }
 
 function b_1(h=0) {

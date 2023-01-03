@@ -38,7 +38,6 @@ CONFIG = {
         "connections": 10,
         "threads": 3,
         "retry": 3,
-        "zerofill": 2,
         "timeout": 5,
         "temp_path": "temp",
     },
@@ -99,7 +98,6 @@ UA: str = CONFIG["global"]["user-agent"]
 CONS: int = CONFIG["global"]["connections"]
 THRS: int = CONFIG["global"]["threads"]
 RETRY: int = CONFIG["global"]["retry"]
-ZFILL: int = CONFIG["global"]["zerofill"]
 TIMEOUT: float = CONFIG["global"]["timeout"]
 TEMP_PATH: str = CONFIG["global"]["temp_path"]
 
@@ -127,7 +125,6 @@ def save_changeable_update():
     CONFIG["global"]["connections"] = CONS
     CONFIG["global"]["threads"] = THRS
     CONFIG["global"]["retry"] = RETRY
-    CONFIG["global"]["zerofill"] = ZFILL
     CONFIG["global"]["timeout"] = TIMEOUT
     CONFIG["global"]["temp_path"] = TEMP_PATH
 

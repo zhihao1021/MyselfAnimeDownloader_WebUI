@@ -9,13 +9,16 @@
     --primary-color: 90, 90, 90;
     --second-color: 144, 144, 144;
     font-family: "Noto Sans TC", sans-serif;
-    /* font-family: 'Open Sans', sans-serif; */
     /* --background-color: 255, 255, 255;
     --secondground-color: 230, 230, 230;
     --contrast-color: 0, 0, 0;
     --sec-contrast-color: 0, 130, 255;
     --primary-color: 150, 150, 150;
     --second-color: 60, 60, 60; */
+}
+
+.eng {
+    font-family: 'Open Sans', sans-serif;
 }
 
 * {

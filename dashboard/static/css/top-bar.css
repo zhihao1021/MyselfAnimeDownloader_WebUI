@@ -16,6 +16,7 @@
 #top-bar img {
     height: 56px;
     margin: auto 12px;
+    cursor: pointer;
 }
 
 /* 標題 */
@@ -25,6 +26,9 @@
     font-size: 42px;
     text-emphasis: 1px;
     margin: auto 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 /* 分頁 */
