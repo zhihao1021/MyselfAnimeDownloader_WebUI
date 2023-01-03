@@ -44,7 +44,7 @@ CONFIG = {
     "myself": {
         "check_update": 5,
         "classify": True,
-        "file_name": "[Myself]$NAME $NOTE $NUM集",
+        "file_name": "[Myself]$NAME $EPS",
         "dir_name": "[Myself]$NAME",
         "download_path": "download/myself",
     },

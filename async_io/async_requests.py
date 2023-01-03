@@ -71,5 +71,5 @@ async def requests(
         return result
     except Exception as _exc:
         _exc_text = "".join(format_exception(_exc))
-        MAIN_LOGGER.error(_exc_text)
+        MAIN_LOGGER.error(f"Requests Error: {_exc_text}")
     return None

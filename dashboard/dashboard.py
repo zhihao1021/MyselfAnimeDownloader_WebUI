@@ -3,7 +3,7 @@ from anime_module.myself import MyselfAnime
 from configs import *
 from swap import VIDEO_QUEUE
 
-from asyncio import create_task, gather, get_event_loop, new_event_loop
+from asyncio import gather, new_event_loop
 
 from eventlet import listen, wsgi
 from flask import Flask, render_template, request
@@ -120,6 +120,14 @@ class Dashboard:
                 }
             except: pass
         _search_result = loop.run_until_complete(Myself.search(_keyword))
+        if len(_search_result) == 1:
+            _anime_table = _search_result[0]
+            loop.run_until_complete(_anime_table.update())
+            _anime_dict = map_animetable(_anime_table)
+            return {
+                "type": "anime",
+                "data": _anime_dict
+            }
         _search_result = list(map(map_animetable, _search_result))
         return {
             "type": "search",
@@ -129,7 +137,6 @@ class Dashboard:
     # 下載
     @app.route("/api/download", methods=["POST"])
     def api_download():
-        print(request.get_json())
         if request.is_json:
             data = request.get_json()
         else:
@@ -138,13 +145,15 @@ class Dashboard:
         _ani_name = data["ani_name"]
         _episodes = data["episodes"]
         _tasks = []
+
         loop = new_event_loop()
         for _episode_data in _episodes:
-            _tasks.append(MyselfAnime(
+            
+            _tasks.append(loop.create_task(MyselfAnime(
                 _ani_name,
                 _episode_data["tid"],
                 _episode_data["vid"]
-            ).get_m3u8_url())
+            ).get_m3u8_url()))
 
         _m3u8s = loop.run_until_complete(gather(*_tasks))
         for _m3u8_info, _episode in zip(_m3u8s, _episodes):

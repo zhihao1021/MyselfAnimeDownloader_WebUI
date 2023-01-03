@@ -21,6 +21,11 @@ function show_page(page) {
     }
 }
 
+// 更新搜尋頁面
+function update_results(data) {
+    
+}
+
 // 更新資料頁面
 function update_anime(data) {
     document.querySelector("#anime-img").src = data.IMAGE_URL
@@ -147,5 +152,4 @@ function send_episode() {
         contentType: "application/json",
         type: "POST"
     })
-    // $.post("/api/download", data);
 }
