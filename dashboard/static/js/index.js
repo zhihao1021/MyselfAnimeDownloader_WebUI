@@ -60,10 +60,11 @@ function set_color() {
 function search(keyword) {
     $.post("/api/search", {"keyword": keyword}, (result)=>{
         if (result.type == "anime") {
+            // 回傳動畫
             update_anime(result.data);
         }
         else {
-
+            update_results(result.data);
         }
     })
     show_page(0);
