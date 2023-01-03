@@ -26,6 +26,7 @@
 
 #info-anime .info-block {
     flex: 1;
+    max-width: 80%;
 }
 
 #info-anime .info-block .anime {
@@ -34,27 +35,33 @@
 }
 #info-anime .info-block .anime .anime-content {
     flex: 1;
+    max-width: calc(100% - 318px);
 }
 #info-anime .info-block .anime .anime-data {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: 50% 50%;
     grid-template-rows: 32px 32px 32px 32px;
     gap: 6px;
 }
 
 #info-anime .info-block .anime .data-box {
     display: flex;
-    color: rgb(var(--contrast-color));
 }
 #info-anime .info-block .anime .data-box p,
 #info-anime .info-block .anime .data-box a {
     margin: auto 0px;
     font-size: 22px;
     line-height: 32px;
+    max-width: 50%;
     min-width: 25%;
     white-space: nowrap;
     text-overflow: ellipsis;
     transition: 0.3s;
+    color: rgb(var(--contrast-color));
+    text-decoration: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
 }
 #info-anime .info-block .anime .data-box a:hover {
     color: rgb(var(--sec-contrast-color));
@@ -73,4 +80,120 @@
 #info-anime .episode-block {
     flex: 1;
     max-width: 22%;
+    display: flex;
+    flex-direction: column;
+}
+
+#info-anime .episode-select {
+    display: flex;
+}
+#info-anime .episode-select input {
+    flex: 1;
+    background-color: transparent;
+    border-style: none;
+    border-bottom-style: solid;
+    border-width: 1px;
+    border-color: rgb(var(--primary-color));
+    caret-color: rgb(var(--contrast-color));
+    outline: none;
+    font-size: 16px;
+    height: 24px;
+    line-height: 24px;
+    color: rgb(var(--contrast-color));
+    margin: auto 4px auto 2px;
+}
+#info-anime input:focus {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}
+#info-anime .episode-select button {
+    background-color: transparent;
+    width: 64px;
+    height: 28px;
+    font-size: 16px;
+    line-height: 28px;
+    color: rgb(var(--secondground-color));
+    border-color: rgb(var(--secondground-color));
+    border-width: 1px;
+    border-radius: 0px;
+    border-style: solid;
+    margin: 0px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+#info-anime .episode-select button:first-of-type {
+    border-radius: 5px 0px 0px 5px;
+}
+#info-anime .episode-select button:last-of-type {
+    border-radius: 0px 5px 5px 0px;
+}
+#info-anime .episode-select button:hover {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}
+
+#info-anime .episode-send {
+    display: flex;
+    flex: 1;
+}
+#info-anime .episode-send button {
+    background-color: transparent;
+    width: 72px;
+    height: 32px;
+    font-size: 18px;
+    line-height: 32px;
+    color: rgb(var(--secondground-color));
+    border-color: rgb(var(--secondground-color));
+    border-width: 1px;
+    border-radius: 0px;
+    border-style: solid;
+    margin: 0px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+#info-anime .episode-send button:first-of-type {
+    border-radius: 5px 0px 0px 5px;
+}
+#info-anime .episode-send button:last-of-type {
+    border-radius: 0px 5px 5px 0px;
+}
+#info-anime .episode-send button:hover {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}
+#info-anime .episode-send button:last-of-type:hover {
+    color: rgb(255, 60, 60);
+    border-color: rgb(255, 60, 60);
+}
+
+#episodes {
+    flex: 4;
+    width: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+#episodes .episode {
+    width: calc(100% - 2px);
+    height: 40px;
+    color: rgb(var(--primary-color));
+    text-align: center;
+    font-size: 24px;
+    line-height: 40px;
+    border-style: solid;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgb(var(--secondground-color));
+    user-select: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+#episodes .episode.sel {
+    color: rgb(var(--contrast-color));
+    background-color: rgb(var(--secondground-color));
+}
+#episodes .episode:hover {
+    color: rgb(var(--sec-contrast-color));
+    border-color: rgb(var(--sec-contrast-color));
 }

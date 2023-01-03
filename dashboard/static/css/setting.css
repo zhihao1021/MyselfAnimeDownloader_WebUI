@@ -62,6 +62,10 @@
     width: 48px;
     text-align: right;
 }
+#setting .row input:focus {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}
 
 #setting .button-box button {
     background-color: transparent;
@@ -78,17 +82,17 @@
     transition: 0.3s;
     cursor: pointer;
 }
-#setting .button-box button:first-child {
+#setting .button-box button:first-of-type {
     border-radius: 5px 0px 0px 5px;
 }
-#setting .button-box button:last-child {
+#setting .button-box button:last-of-type {
     border-radius: 0px 5px 5px 0px;
 }
 #setting .button-box button:hover {
     color: rgb(var(--contrast-color));
     border-color: rgb(var(--contrast-color));
 }
-#setting .button-box button:last-child:hover {
-    color: rgb(255, 0, 0);
-    border-color: rgb(255, 0, 0);
+#setting .button-box button:last-of-type:hover {
+    color: rgb(255, 60, 60);
+    border-color: rgb(255, 60, 60);
 }

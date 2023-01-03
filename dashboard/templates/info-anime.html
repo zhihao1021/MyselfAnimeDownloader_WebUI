@@ -29,7 +29,7 @@
                     <hr class="vtl-hr" style="height: 75%;">
                     <p class="a-content"></p>
                 </div>
-                <div id="anime-offical-web" class="data-box">
+                <div id="anime-official-web" class="data-box">
                     <p class="a-title">官方網站</p>
                     <hr class="vtl-hr" style="height: 75%;">
                     <a class="a-content" href="" target="_blank"></a>
@@ -58,4 +58,21 @@
     <div class="data"></div>
 </div>
 <hr class="vtl-hr">
-<div class="episode-block"></div>
+<div class="episode-block">
+    <div class="sec-title">選擇集數</div>
+    <hr class="hor-hr">
+    <div class="episode-select">
+        <input type="text" placeholder="ex. 1,5,7-10,!6" class="eng" onkeydown="if (event.keyCode == 13) {select_episodes(this.value);this.value='';}">
+        <button class="select-send" onclick="select_episodes(this.previousElementSibling.value);this.previousElementSibling.value=''">確認</button>
+        <button class="select-all" onclick="select_episodes('-');">全選</button>
+    </div>
+    <hr class="hor-hr">
+    <div id="episodes">
+        <!-- <div class="episode" onclick="selected(this);">第 1 話</div> -->
+    </div>
+    <hr class="hor-hr">
+    <div class="episode-send">
+        <button onclick="send_episode();">確認</button>
+        <button onclick="select_episodes('');">重設</button>
+    </div>
+</div>

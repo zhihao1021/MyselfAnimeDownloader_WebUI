@@ -1,5 +1,5 @@
-<img src="../static/img/logo.png">
-<div class="title">Myself Anime Downloader</div>
+<img src="../static/img/logo.png" onclick="location.hash='home'">
+<div class="title" onclick="location.hash='home'">Myself Anime Downloader</div>
 <div class="tab" onclick="location.hash='home'">
     <p class="ms">home</p>
     <p>Home</p>
@@ -31,7 +31,7 @@
 <div class="empty"></div>
 <div id="switch-q" class="ms" onclick="b_1();">question_mark</div>
 <div id="switch-color" class="ms" onclick="switch_color();">light_mode</div>
-<input class="search" placeholder="Search...">
+<input class="search" placeholder="Search..." onkeydown="if (event.keyCode==13) {search(this.value);this.value=''}">
 <script>
     if (Cookies.get("color_mode") == "1") {
         document.querySelector("#switch-color").textContent = "dark_mode";

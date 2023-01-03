@@ -24,6 +24,15 @@ def _ce_dir(dir_path: str):
             except: pass
     if _d: _ce_dir(dir_path)
 
+def gen_file_name(name: str, episode_name: str):
+    _result = MYSELF_FILE.replace("$NAME", name)
+    _result = _result.replace("$EPS", episode_name)
+    return _result
+
+def gen_dir_name(name: str):
+    _result = MYSELF_FILE.replace("$NAME", name)
+    return _result
+
 class M3U8:
     def __init__(self,
         host: str,
