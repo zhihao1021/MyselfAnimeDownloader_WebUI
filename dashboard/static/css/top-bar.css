@@ -22,7 +22,7 @@
 /* 標題 */
 #top-bar .title {
     color: rgb(var(--contrast-color));
-    font-family: 'Caveat', cursive;
+    font-family: "Caveat", cursive;
     font-size: 42px;
     text-emphasis: 1px;
     margin: auto 12px;

@@ -1,0 +1,39 @@
+#info-results {
+    display: flex;
+    flex-wrap: wrap;
+    overflow-y: auto;
+}
+
+#info-results .result-box {
+    margin: 6px;
+    flex: 1;
+    max-width: calc(20% - 12px);
+    min-width: 320px;
+    height: 120px;
+    border-radius: 8px;
+    border-color: rgb(var(--secondground-color));
+    border-width: 1px;
+    border-style: solid;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(var(--contrast-color));
+    user-select: none;
+    transition: 0.3s;
+}
+
+#info-results .result-box:hover {
+    color: rgb(var(--sec-contrast-color));
+    border-color: rgb(var(--sec-contrast-color));
+}
+
+#info-results .result-box p {
+    text-align: center;
+    line-height: 28px;
+    font-size: 22px;
+    word-wrap:normal;
+    white-space: pre-line;
+    overflow-wrap: normal;
+    width: 90%;
+    transition: 0.1s;
+}
