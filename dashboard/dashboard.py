@@ -96,8 +96,9 @@ class Dashboard:
     def api_search():
         def map_animetable(animetable: MyselfAnimeTable):
             _result = animetable.__dict__
-            for _index, _anime in enumerate(_result["VIDEO_LIST"]):
-                _result["VIDEO_LIST"][_index] = _anime.__dict__
+            if animetable.updated:
+                for _index, _anime in enumerate(_result["VIDEO_LIST"]):
+                    _result["VIDEO_LIST"][_index] = _anime.__dict__
             return _result
         if request.is_json:
             data = request.get_json()
@@ -105,7 +106,10 @@ class Dashboard:
             data = {
                 "keyword": request.values.get("keyword"),
             }
-        _keyword = data.get("keyword").strip()
+        try:
+            _keyword = data.get("keyword").strip()
+        except:
+            return {"type": "error"}
 
         loop = new_event_loop()
         if MYSELF_URL in _keyword:
