@@ -23,7 +23,21 @@ function show_page(page) {
 
 // 更新搜尋頁面
 function update_results(data) {
-    
+    if (data.length == 0) {
+        show_page(3);
+        return;
+    }
+    data.forEach((value)=>{
+        let ele = document.createElement("div");
+        ele.classList.add("result-box");
+        ele.url = value.URL;
+        ele.onclick = function () {search(this.url);};
+        let p_ele = document.createElement("p");
+        p_ele.textContent = value.NAME;
+        ele.appendChild(p_ele);
+        document.querySelector("#info-results").appendChild(ele);
+    })
+    show_page(1);
 }
 
 // 更新資料頁面
@@ -123,6 +137,7 @@ function select_episodes(inp) {
         }
         let i = parseInt(value);
         if (isNaN(i)) {return;}
+        i = Math.max(0, Math.min(i, all_episode.length));
         i--;
         if (remove) {
             all_episode[i].classList.remove("sel");

@@ -19,7 +19,8 @@
     align-items: center;
     color: rgb(var(--contrast-color));
     user-select: none;
-    transition: 0.3s;
+    transition: 0.4s;
+    cursor: pointer;
 }
 
 #info-results .result-box:hover {

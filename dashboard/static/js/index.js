@@ -63,8 +63,11 @@ function search(keyword) {
             // 回傳動畫
             update_anime(result.data);
         }
-        else {
+        else if (result.type == "search") {
             update_results(result.data);
+        }
+        else {
+            show_page(3);
         }
     })
     show_page(0);
