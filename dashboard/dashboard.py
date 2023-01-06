@@ -12,13 +12,13 @@ from flask_socketio import SocketIO
 
 class Dashboard:
     app = Flask(__name__)
-    socket_io = SocketIO(app)
+    socket_io = SocketIO(app, async_mode="eventlet")
     def __init__(self) -> None:
         self.app.debug = WEB_DEBUG
         self.app.logger = WEB_LOGGER
 
     def run(self) -> None:
-        self.socket_io.run(self.app, WEB_HOST, WEB_PORT)
+        self.socket_io.run(self.app, WEB_HOST, WEB_PORT, use_reloader=False)
         # wsgi.server(
         #     listen((WEB_HOST, WEB_PORT)),
         #     self.app,
