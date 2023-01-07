@@ -162,9 +162,10 @@ function send_episode() {
         ele.classList.remove("sel");
     })
     data["episodes"] = episodes;
-    $.ajax("/api/download", {
-        data: JSON.stringify(data),
-        contentType: "application/json",
-        type: "POST"
-    })
+    $.post("/api/download", data);
+    // $.ajax("/api/download", {
+    //     data: JSON.stringify(data),
+    //     contentType: "application/json",
+    //     type: "POST"
+    // });
 }
