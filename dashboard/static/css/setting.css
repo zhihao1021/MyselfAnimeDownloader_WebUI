@@ -39,6 +39,11 @@
     color: rgb(var(--contrast-color));
     margin: 4px;
 }
+#setting .remark {
+    font-size: 14px;
+    color: rgb(var(--contrast-color));
+    margin: 4px;
+}
 #setting .row input {
     width: 75%;
     margin: 4px;

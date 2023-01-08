@@ -29,6 +29,36 @@
     max-width: 80%;
 }
 
+#info-anime .info-block .back-block {
+    height: 32px;
+    display: flex;
+}
+#info-anime .info-block .back-block button {
+    background-color: transparent;
+    width: 96px;
+    height: 30px;
+    font-size: 18px;
+    line-height: 26px;
+    color: rgb(var(--secondground-color));
+    border-color: rgb(var(--secondground-color));
+    border-width: 1px;
+    border-radius: 4px;
+    border-style: solid;
+    margin: 0px;
+    transition: color 0.3s, border-color 0.3s;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#info-anime .info-block .back-block button p {
+    transition: 0s;
+}
+#info-anime .info-block .back-block button:hover {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}
+
 #info-anime .info-block .anime {
     height: 420px;
     display: flex;

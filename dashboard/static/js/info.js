@@ -1,7 +1,7 @@
-let _last_episode;
+let _last_episode, _last_page = 3;
 
 // 顯示分頁
-function show_page(page) {
+function show_page(page=_last_page) {
     document.querySelector("#info-loading").style.display = "none";
     document.querySelector("#info-results").style.display = "none";
     document.querySelector("#info-anime").style.display = "none";
@@ -12,12 +12,15 @@ function show_page(page) {
             break;
         case 1:
             document.querySelector("#info-results").style.display = "";
+            _last_page = 1;
             break
         case 2:
             document.querySelector("#info-anime").style.display = "";
             break;
         case 3:
             document.querySelector("#info-search").style.display = "";
+            _last_page = 3;
+            break;
     }
 }
 
@@ -27,6 +30,10 @@ function update_results(data) {
         show_page(3);
         return;
     }
+    let results = document.querySelector("#info-results .results");
+    results.querySelectorAll("div.result-box").forEach((ele)=>{
+        results.removeChild(ele);
+    });
     data.forEach((value)=>{
         let ele = document.createElement("div");
         ele.classList.add("result-box");
@@ -35,9 +42,10 @@ function update_results(data) {
         let p_ele = document.createElement("p");
         p_ele.textContent = value.NAME;
         ele.appendChild(p_ele);
-        document.querySelector("#info-results").appendChild(ele);
+        results.appendChild(ele);
     })
     show_page(1);
+    _last_page = 1;
 }
 
 // 更新資料頁面
