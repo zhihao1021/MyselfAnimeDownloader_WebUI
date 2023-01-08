@@ -304,15 +304,25 @@ class Myself:
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _total_page = int(_soup.select_one("label span")["title"].split(" ")[1])
                 start_page = min(_total_page, start_page)
+                page_num = min(page_num, _total_page - start_page + 1)
 
-                if start_page > 1:
-                    _res = await requests(urljoin(MYSELF_URL, f"forum-113-{start_page}.html"), _client)
-                    _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
+                _soup_list: list[BeautifulSoup] = []
+                _res_task = []
+                if start_page == 1:
+                    _soup_list.append(_soup)
+                    start_page += 1
+                    page_num -= 1
+                for _page_index in range(start_page, start_page + page_num):
+                    _res_task.append(create_task(
+                        requests(urljoin(MYSELF_URL, f"forum-113-{_page_index}.html"), _client)
+                    ))
+                if len(_res_task) != 0:
+                    _res_results = await gather(*_res_task)
+                    _soup_list += list(map(lambda _res: BeautifulSoup(_res, features="html.parser"), _res_results))
 
                 result = []
-                _walked_page = 0
                 if update: tasks = []
-                while True:
+                for _soup in _soup_list:
                     _anime_list = _soup.select("ul.ml.mlt.mtw.cl h3 a")
                     for _anime_tag in _anime_list:
                         _anime_url = urljoin(MYSELF_URL, _anime_tag["href"])
@@ -323,12 +333,6 @@ class Myself:
                             create_task(_anime_table.update(_client))
                         )
                         result.append(_anime_table)
-                    _next_page = _soup.select_one("a.nxt")
-                    _walked_page += 1
-                    if _next_page == None or _walked_page >= page_num:
-                        break
-                    _res = await requests(urljoin(MYSELF_URL, _next_page["href"]), _client)
-                    _soup = BeautifulSoup(_res, features="html.parser")
                 if update:
                     await gather(*tasks)
                 if need_close: await _client.close()
@@ -374,11 +378,29 @@ class Myself:
                 _redirect_url = _raw_res.url
                 _res = await requests(f"{_redirect_url}&page={start_page}", _client)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
+                _total_res = int(_soup.select_one("div.sttl. em").text.split(" ")[-2])
+                _total_page = _total_res // 20
+                if _total_res % 20 != 0: _total_page += 1
+                start_page = min(_total_page, start_page)
+                page_num = min(page_num, _total_page - start_page + 1)
+
+                _soup_list: list[BeautifulSoup] = []
+                _res_task = []
+                if start_page == 1:
+                    _soup_list.append(_soup)
+                    start_page += 1
+                    page_num -= 1
+                for _page_index in range(start_page, start_page + page_num):
+                    _res_task.append(create_task(
+                        requests(f"{_redirect_url}&page={_page_index}", _client)
+                    ))
+                if len(_res_task) != 0:
+                    _res_results = await gather(*_res_task)
+                    _soup_list += list(map(lambda _res: BeautifulSoup(_res, features="html.parser"), _res_results))
 
                 result = []
-                _walked_page = 0
                 if update: tasks = []
-                while True:
+                for _soup in _soup_list:
                     _anime_list = _soup.select("li.pbw a[href*=tid]")
                     for _anime_tag in _anime_list:
                         _anime_tid = parse_qs(_anime_tag["href"].replace("amp;", ""))["tid"][0]
@@ -390,12 +412,6 @@ class Myself:
                             create_task(_anime_table.update(_client))
                         )
                         result.append(_anime_table)
-                    _next_page = _soup.select_one("a.nxt")
-                    _walked_page += 1
-                    if _next_page == None or _walked_page >= page_num:
-                        break
-                    _res = await requests(urljoin(MYSELF_URL, _next_page["href"]), _client)
-                    _soup = BeautifulSoup(_res, features="html.parser")
                 if update:
                     await gather(*tasks)
                 if need_close: await _client.close()

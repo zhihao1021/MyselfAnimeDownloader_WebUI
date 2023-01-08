@@ -1,5 +1,6 @@
 from api import API
 from configs import *
+from modules import Json
 
 from asyncio import new_event_loop
 
@@ -8,15 +9,11 @@ from eventlet import listen, wsgi
 
 class Dashboard:
     app = Flask(__name__)
-    # socket_io = SocketIO(app, async_mode="eventlet")
-    # socket_io.init_app(app, cors_allowed_origins='*')
-    # socket_io.event()
     def __init__(self) -> None:
         self.app.debug = WEB_DEBUG
         self.app.logger = WEB_LOGGER
 
     def run(self) -> None:
-        # self.socket_io.run(self.app, WEB_HOST, WEB_PORT, use_reloader=False)
         wsgi.server(
             listen((WEB_HOST, WEB_PORT)),
             self.app,
@@ -71,6 +68,38 @@ class Dashboard:
         return "", 200
     
     # 取得設定
-    @app.route("/api/get-setting", methods=["POST"])
+    @app.route("/api/get-setting", methods=["POST", "GET"])
     def api_get_setting():
-        pass
+        _result = {
+            "ua": UA,
+            "temp-path": TEMP_PATH,
+            "thrs": THRS,
+            "cons": CONS,
+            "myself-dir": MYSELF_DIR,
+            "myself-file": MYSELF_FILE,
+            "myself-download": MYSELF_DOWNLOAD,
+            "myself-update": MYSELF_UPDATE
+        }
+        return _result
+    
+    # 更新設定
+    @app.route("/api/send-setting", methods=["POST", "GET"])
+    def api_send_setting():
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.values.to_dict()
+        CONFIG["global"].update({
+            "user-agent":  data.get("ua", UA),
+            "temp_path":  data.get("temp-path", TEMP_PATH),
+            "threads":  int(data.get("thrs", THRS)),
+            "connections":  int(data.get("cons", CONS)),
+        })
+        CONFIG["myself"].update({
+            "dir_name": data.get("myself-dir", MYSELF_DIR),
+            "file_name": data.get("myself-file", MYSELF_FILE),
+            "download_path": data.get("myself-download", MYSELF_DOWNLOAD),
+            "check_update": int(data.get("myself-update", MYSELF_UPDATE)),
+        })
+        Json.dump("config.json", CONFIG)
+        return "", 200

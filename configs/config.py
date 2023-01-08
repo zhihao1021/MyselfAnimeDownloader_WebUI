@@ -27,7 +27,7 @@ class LoggingConfig:
         self.FILE_NAME = data["file_name"]
         self.DIR_PATH = data["dir_path"]
 
-CONFIG = {
+CONFIG: dict[str, dict] = {
     "web": {
         "host": "0.0.0.0",
         "port": 5000,
@@ -55,21 +55,21 @@ CONFIG = {
         "main": {
             "stream_level": "INFO",
             "file_level": "INFO",
-            "backup_count": 3,
+            "backup_count": 10,
             "file_name": "main",
             "dir_path": "logs",
         },
         "myself": {
             "stream_level": "INFO",
             "file_level": "INFO",
-            "backup_count": 3,
+            "backup_count": 10,
             "file_name": "myself",
             "dir_path": "logs",
         },
         "web": {
             "stream_level": "INFO",
             "file_level": "INFO",
-            "backup_count": 3,
+            "backup_count": 10,
             "file_name": "web",
             "dir_path": "logs",
         },
@@ -119,19 +119,3 @@ TIMEZONE: timezone = timezone(timedelta(hours=CONFIG["timezone"]))
 FFMPEG_ARGS: str = CONFIG["ffmpeg_args"]
 
 MYSELF_URL = "https://myself-bbs.com"
-
-def save_changeable_update():
-    CONFIG["global"]["user-agent"] = UA
-    CONFIG["global"]["connections"] = CONS
-    CONFIG["global"]["threads"] = THRS
-    CONFIG["global"]["retry"] = RETRY
-    CONFIG["global"]["timeout"] = TIMEOUT
-    CONFIG["global"]["temp_path"] = TEMP_PATH
-
-    CONFIG["myself"]["check_update"] = MYSELF_UPDATE
-    CONFIG["myself"]["classify"] = MYSELF_CLASSIFY
-    CONFIG["myself"]["file_name"] = MYSELF_FILE
-    CONFIG["myself"]["dir_name"] = MYSELF_DIR
-    CONFIG["myself"]["download_path"] = MYSELF_DOWNLOAD
-
-    Json.dump("config.json", CONFIG)

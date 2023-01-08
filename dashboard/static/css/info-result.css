@@ -1,10 +1,14 @@
 #info-results {
+    height: 100%;
+}
+
+#info-results .results {
     display: flex;
     flex-wrap: wrap;
     overflow-y: auto;
 }
 
-#info-results .result-box {
+#info-results .results .result-box {
     margin: 6px;
     flex: 1;
     max-width: calc(20% - 12px);
@@ -23,12 +27,12 @@
     cursor: pointer;
 }
 
-#info-results .result-box:hover {
+#info-results .results .result-box:hover {
     color: rgb(var(--sec-contrast-color));
     border-color: rgb(var(--sec-contrast-color));
 }
 
-#info-results .result-box p {
+#info-results .results .result-box p {
     text-align: center;
     line-height: 28px;
     font-size: 22px;
@@ -36,5 +40,5 @@
     white-space: pre-line;
     overflow-wrap: normal;
     width: 90%;
-    transition: 0.1s;
+    transition: 0s;
 }

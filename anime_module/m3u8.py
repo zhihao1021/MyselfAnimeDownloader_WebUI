@@ -30,7 +30,7 @@ def gen_file_name(name: str, episode_name: str):
     return _result
 
 def gen_dir_name(name: str):
-    _result = MYSELF_FILE.replace("$NAME", name)
+    _result = MYSELF_DIR.replace("$NAME", name)
     return _result
 
 class M3U8:
@@ -180,9 +180,7 @@ class M3U8:
             ),
         )
         if _subprocess_res.stderr != b"":
-            open(f"{datetime.now(TIMEZONE).isoformat().replace(':', '_')}_ffmpeg_error.log", mode="wb").write(
-                _subprocess_res.stderr
-            )
+            MAIN_LOGGER.error(f"M3U8: FFmpeg Error: {_subprocess_res.stderr.decode()}")
         else:
             self._clean_up()
         MAIN_LOGGER.info(f"M3U8: 已完成下載`{self.output_name}`。")

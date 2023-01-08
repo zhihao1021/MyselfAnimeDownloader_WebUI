@@ -1,5 +1,6 @@
 <div class="setting-box">
     <div class="title">設定</div>
+    <div class="remark">*重啟後生效</div>
     <hr>
     <div class="setting-title">全域設定</div>
     <div class="row">
@@ -8,40 +9,40 @@
     </div>
     <div class="row">
         <div class="name">暫存資料夾 :</div>
-        <input type="text" name="temp_path">
+        <input type="text" name="temp-path">
     </div>
     <div class="row">
         <div class="name">下載線程數 :</div>
-        <input type="number" min="1" step="1" name="threads">
+        <input type="number" min="1" step="1" name="thrs">
         <div class="name">個</div>
     </div>
     <div class="row">
         <div class="name">連接數量 :</div>
-        <input type="number" min="1" step="1" name="connections">
+        <input type="number" min="1" step="1" name="cons">
         <div class="name">個/線程</div>
     </div>
 
     <div class="setting-title">Myself設定</div>
     <div class="row">
         <div class="name">資料夾名稱</div>
-        <input type="text" name="myself_dir_name">
+        <input type="text" name="myself-dir">
     </div>
     <div class="row">
         <div class="name">檔案名稱</div>
-        <input type="text" name="myself_file_name">
+        <input type="text" name="myself-file">
     </div>
     <div class="row">
         <div class="name">下載位置</div>
-        <input type="text" name="myself_download_path">
+        <input type="text" name="myself-download">
     </div>
     <div class="row">
         <div class="name">檢查更新間隔</div>
-        <input type="number" min="1" step="1" name="myself_update">
+        <input type="number" min="1" step="1" name="myself-update">
         <div class="name">分鐘</div>
     </div>
     <hr>
     <div class="button-box">
-        <button class="save">保存</button>
-        <button class="restore">重設</button>
+        <button class="save" onclick="send_setting();">保存</button>
+        <button class="restore" onclick="get_setting();">重設</button>
     </div>
 </div>
