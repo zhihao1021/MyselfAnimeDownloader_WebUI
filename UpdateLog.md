@@ -12,14 +12,16 @@
 ## TODO Summary
 > 詳細下一次做甚麼會寫在每次更新的日誌中
 
-1. 新增單元測試(Unit Testing)
-2. ~~新增m3u8下載器~~ 2022/12/28
-3. 移植Web UI
-4. 後端重構
-5. 連結SQL Database紀錄下載
-6. ~~新增貯列管理器~~ 2023/01/01
-7. WebSocket Server
-8. 行動版專有頁面(放棄做RWD了XD
+1.  新增單元測試(Unit Testing)
+2.  ~~新增m3u8下載器~~ 2022/12/28
+3.  移植Web UI
+4.  後端重構
+5.  連結SQL Database紀錄下載
+6.  ~~新增貯列管理器~~ 2023/01/01
+7.  WebSocket Server
+8.  行動版專有頁面(放棄做RWD了XD
+9.  Read From Cache
+10. 自訂介面色彩
 
 ---
 
