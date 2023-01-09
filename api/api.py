@@ -93,7 +93,7 @@ class API:
         }
     
     @staticmethod
-    async def download(data):
+    async def download(data: dict):
         _ani_name = data["ani_name"]
         _episodes = data["episodes"]
         _tasks = []
@@ -116,4 +116,19 @@ class API:
             )
             VIDEO_QUEUE.add(_downloader)
         return ""
+
+    @staticmethod
+    async def get_week_anime():
+        def map_animetable(animetable_tuple: tuple[MyselfAnimeTable, str]):
+            animetable, update_text = animetable_tuple
+            return (animetable.__dict__, update_text)
+
+        _week_list = await Myself.weekly_update()
+
+        _result = list(map(
+            lambda _day_data: list(map(map_animetable, _day_data)),
+            _week_list
+        ))
+        
+        return _result
     

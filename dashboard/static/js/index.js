@@ -1,7 +1,6 @@
 function onload() {
     hash_change();
     set_color();
-    get_setting();
 }
 
 // 切換頁面

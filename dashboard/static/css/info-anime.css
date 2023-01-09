@@ -80,9 +80,9 @@
 #info-anime .info-block .anime .data-box p,
 #info-anime .info-block .anime .data-box a {
     margin: auto 0px;
+    position: relative;
     font-size: 22px;
     line-height: 32px;
-    max-width: 50%;
     min-width: 25%;
     white-space: nowrap;
     text-overflow: ellipsis;
