@@ -21,6 +21,9 @@ function show_page(page=_last_page) {
             document.querySelector("#info-search").style.display = "";
             _last_page = 3;
             break;
+        case 4:
+            location.hash = "update";
+            break;
     }
 }
 
@@ -65,7 +68,14 @@ function update_anime(data) {
     
     document.querySelector("#anime-intro").textContent = data.INTRO
 
+    document.querySelectorAll("#info-anime .anime-data .a-content").forEach((ele)=>{
+        ele.title = ele.textContent;
+    })
+
     let episodes = document.querySelector("#episodes");
+    episodes.querySelectorAll("div.episode").forEach((ele)=>{
+        episodes.removeChild(ele);
+    });
     data.VIDEO_LIST.forEach((eps_data, index)=> {
         let new_ele = document.createElement("div");
         new_ele.classList.add("episode");
@@ -170,10 +180,10 @@ function send_episode() {
         ele.classList.remove("sel");
     })
     data["episodes"] = episodes;
-    $.post("/api/download", data);
-    // $.ajax("/api/download", {
-    //     data: JSON.stringify(data),
-    //     contentType: "application/json",
-    //     type: "POST"
-    // });
+    // $.post("/api/download", data);
+    $.ajax("/api/download", {
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        type: "POST"
+    });
 }

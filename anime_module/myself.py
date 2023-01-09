@@ -378,7 +378,7 @@ class Myself:
                 _redirect_url = _raw_res.url
                 _res = await requests(f"{_redirect_url}&page={start_page}", _client)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
-                _total_res = int(_soup.select_one("div.sttl. em").text.split(" ")[-2])
+                _total_res = int(_soup.select_one("div.sttl em").text.split(" ")[-2])
                 _total_page = _total_res // 20
                 if _total_res % 20 != 0: _total_page += 1
                 start_page = min(_total_page, start_page)

@@ -53,6 +53,7 @@
     text-indent: 4px;
     white-space: nowrap;
     text-overflow: ellipsis;
+    overflow-x: hidden;
     flex: 1;
 }
 #home .queue .progress-bar .progress-text .progress-option {

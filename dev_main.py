@@ -11,9 +11,10 @@ async def m3u8s():
     res = await Myself.weekly_update()
     anime_table = res[-1][-5][0]
     await anime_table.update()
+    # print(anime_table)
     ds = []
     tasks = []
-    for i in range(5):
+    for i in range(1):
         tasks.append(create_task(anime_table.VIDEO_LIST[i].get_m3u8_url()))
     res = await gather(*tasks)
     for i, _data in enumerate(res):

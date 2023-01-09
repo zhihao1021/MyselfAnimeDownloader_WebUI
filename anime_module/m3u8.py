@@ -31,7 +31,7 @@ def gen_file_name(name: str, episode_name: str):
 
 def gen_dir_name(name: str):
     _result = MYSELF_DIR.replace("$NAME", name)
-    return _result
+    return join(MYSELF_DOWNLOAD, _result)
 
 class M3U8:
     def __init__(self,
@@ -113,6 +113,7 @@ class M3U8:
             makedirs(self.temp_dir)
         # 解析m3u8檔案
         _ts_urls = Queue()
+        _total_file_list = []
         async with a_open(join(self.temp_dir, "comp_in"), mode="w") as _comp_file:
             for _line in m3u8_file_content.split("\n"):
                 if not _line.endswith(".ts"): continue
@@ -120,7 +121,8 @@ class M3U8:
                 # 寫入FFmpeg合成檔
                 await _comp_file.write(f"file 'f_{_line}'\n")
                 # 加入貯列
-                _ts_urls.put_nowait(_line)
+                await _ts_urls.put(_line)
+                _total_file_list.append(_line)
                 # 更新區塊數量
                 self._block_num += 1
         
@@ -134,10 +136,19 @@ class M3U8:
             # 開始下載
             res = await gather(*self.tasks, return_exceptions=True)
             
-            if "block" not in res: break
-            
-            MAIN_LOGGER.info(f"M3U8: 檢測到中斷，開始重新下載`{self.output_name}`。")
-            self.tasks = []
+            if "block" in res:
+                MAIN_LOGGER.info(f"M3U8: 檢測到中斷，開始重新下載`{self.output_name}`。")
+                self.tasks = []
+                for _file in _total_file_list:
+                    await _ts_urls.put(_file)
+                continue
+            elif False in map(self._check_file_finish, _total_file_list) and self.get_progress() == 1:
+                MAIN_LOGGER.info(f"M3U8: 檢測到文件缺失，開始重新下載`{self.output_name}`。")
+                self.tasks = []
+                for _file in _total_file_list:
+                    await _ts_urls.put(_file)
+                continue
+            break
 
         await _client.close()
 
@@ -199,11 +210,11 @@ class M3U8:
             while True:
                 try:
                     # 檢查是否已下載完成
-                    _finish_file_path = join(self.temp_dir, f"f_{_file_name}")
-                    if isfile(_finish_file_path):
+                    if self._check_file_finish(_file_name):
                         # 完成
                         self._block_progress[_block_index] = 1
                         break
+                    _finish_file_path = join(self.temp_dir, f"f_{_file_name}")
 
                     # 文件路徑
                     _file_path = join(self.temp_dir, _file_name)
@@ -268,7 +279,7 @@ class M3U8:
         _alive = True
         while _alive:
             _star = self.get_progress()
-            for _ in range(60):
+            for _ in range(5):
                 await sleep(1)
                 _prog = self.get_progress()
                 _alive = _prog < 1
@@ -352,6 +363,10 @@ class M3U8:
         """
         _code = self.status_code()
         return ["下載中", "暫停中", "中斷", "完成", "尚未開始", "中止", "發生錯誤"][_code]
+    
+    def _check_file_finish(self, _file_name: str):
+        _finish_file_path = join(self.temp_dir, f"f_{_file_name}")
+        return isfile(_finish_file_path)
     
     def _clean_up(self) -> None:
         rmtree(self.temp_dir)

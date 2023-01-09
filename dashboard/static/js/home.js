@@ -80,6 +80,7 @@ function fetch_queue(json_data) {
         target.style.order = order;
         // 設置名稱
         target.querySelector(".progress-title").textContent = json_data[value].name;
+        target.querySelector(".progress-title").title = json_data[value].name;
         // 設置進度
         target.querySelector(".progress").textContent = `${(progress * 100).toFixed(1)}%`;
         target.querySelector(".progress").style.setProperty("--proc", progress * 100);

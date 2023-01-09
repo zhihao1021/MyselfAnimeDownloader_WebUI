@@ -103,3 +103,9 @@ class Dashboard:
         })
         Json.dump("config.json", CONFIG)
         return "", 200
+    
+    # 取得每周更新列表
+    @app.route("/api/get-week-anime", methods=["POST", "GET"])
+    def get_week_anime():
+        loop = new_event_loop()
+        return loop.run_until_complete(API.get_week_anime())
