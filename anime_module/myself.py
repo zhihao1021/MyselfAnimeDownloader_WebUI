@@ -1,8 +1,9 @@
-from async_io import requests, new_session
+from async_io import requests, new_session, Cache
 from configs import *
 from modules import Json
 
 from asyncio import sleep as a_sleep, create_task, gather
+from datetime import datetime, timedelta
 from os.path import split as ossplit
 from traceback import format_exception
 from typing import Optional
@@ -134,7 +135,17 @@ class MyselfAnimeTable:
             是否從硬碟快取讀取。
         """
         _res = await requests(self.URL, _client, from_cache=from_cache)
-        _soup = BeautifulSoup(_res, features="html.parser")    # 網頁本體
+        _soup = BeautifulSoup(_res, features="html.parser") # 網頁本體
+        if from_cache:
+            # 檢查是否為完結動畫
+            if _soup.select_one("div.z a[href='forum-113-1.html']") == None:
+                # 檢查距離上次更新是否超過12小時
+                _cache_update_time = await Cache.get_update_time(self.URL)
+                if datetime.now(TIMEZONE) - _cache_update_time > timedelta(hours=12):
+                    # 重新抓取資料
+                    _res = await requests(self.URL, _client, from_cache=False, save_cache=True)
+                    _soup = BeautifulSoup(_res, features="html.parser")
+
         _info_list = _soup.select("div.info_info li")   # 資訊欄列表
         _anime_list = _soup.select("ul.main_list > li") # 動畫列表
 
@@ -209,8 +220,14 @@ class Myself:
             need_close = True
         while True:
             try:
-                _res = await requests(urljoin(MYSELF_URL, "portal.php"), _client, from_cache=from_cache)
-                _soup = BeautifulSoup(_res, features="html.parser")           # 網頁主體
+                _url = urljoin(MYSELF_URL, "portal.php")
+                if from_cache:
+                    # 檢查距離上次更新是否超過1天
+                    _cache_update_time = await Cache.get_update_time(_url)
+                    if datetime.now(TIMEZONE) - _cache_update_time > timedelta(days=1):
+                        from_cache = False
+                _res = await requests(_url, _client, from_cache=from_cache, save_cache=True)
+                _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _week_table = _soup.select("#tabSuCvYn div.module.cl.xl.xl1") # 每周更新列表
 
                 result: list[list[tuple[MyselfAnimeTable, str]]] = []
@@ -257,7 +274,13 @@ class Myself:
             need_close = True
         while True:
             try:
-                _res = await requests(urljoin(MYSELF_URL, "portal.php?mod=topic&topicid=8"), _client, from_cache=from_cache)
+                _url = urljoin(MYSELF_URL, "portal.php?mod=topic&topicid=8")
+                if from_cache:
+                    # 檢查距離上次更新是否超過7天
+                    _cache_update_time = await Cache.get_update_time(_url)
+                    if datetime.now(TIMEZONE) - _cache_update_time > timedelta(days=7):
+                        from_cache = False
+                _res = await requests(_url, _client, from_cache=from_cache, save_cache=True)
                 _soup = BeautifulSoup(_res, features="html.parser")                            # 網頁主體
                 _season_table = _soup.select("div.frame-tab.move-span.cl div.block.move-span") # 每一季動畫列表
                 """
@@ -294,7 +317,7 @@ class Myself:
     @staticmethod
     async def finish_list(start_page: int=1, page_num: int=100, update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> list[MyselfAnimeTable]:
         """
-        取得年分列表頁面的動漫資訊。
+        取得完結列表頁面的動漫資訊。
 
         start_page: :class:`int`
             開始的頁數。
@@ -314,7 +337,13 @@ class Myself:
         page_num = max(1, page_num)
         while True:
             try:
-                _res = await requests(urljoin(MYSELF_URL, "forum-113-1.html"), _client, from_cache=from_cache)
+                _url = urljoin(MYSELF_URL, "forum-113-1.html")
+                if from_cache:
+                    # 檢查距離上次更新是否超過7天
+                    _cache_update_time = await Cache.get_update_time(_url)
+                    if datetime.now(TIMEZONE) - _cache_update_time > timedelta(days=7):
+                        from_cache = False
+                _res = await requests(_url, _client, from_cache=from_cache, save_cache=True)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _total_page = int(_soup.select_one("label span")["title"].split(" ")[1])
                 start_page = min(_total_page, start_page)
@@ -328,7 +357,7 @@ class Myself:
                     page_num -= 1
                 for _page_index in range(start_page, start_page + page_num):
                     _res_task.append(create_task(
-                        requests(urljoin(MYSELF_URL, f"forum-113-{_page_index}.html"), _client, from_cache=from_cache)
+                        requests(urljoin(MYSELF_URL, f"forum-113-{_page_index}.html"), _client, from_cache=from_cache, save_cache=True)
                     ))
                 if len(_res_task) != 0:
                     _res_results = await gather(*_res_task)
@@ -388,9 +417,15 @@ class Myself:
                     ("srchfid[]", 137),
                     ("searchsubmit", "yes"),
                 ]
-                _raw_res = await requests(urljoin(MYSELF_URL, f"/search.php?{urlencode(_query_list)}"), _client, raw=True, from_cache=from_cache)
+                _raw_res = await requests(urljoin(MYSELF_URL, f"/search.php?{urlencode(_query_list)}"), _client, raw=True)
                 _redirect_url = _raw_res.url
-                _res = await requests(f"{_redirect_url}&page={start_page}", _client, from_cache=from_cache)
+                _url = f"{_redirect_url}&page={start_page}"
+                if from_cache:
+                    # 檢查距離上次更新是否超過7天
+                    _cache_update_time = await Cache.get_update_time(_url)
+                    if datetime.now(TIMEZONE) - _cache_update_time > timedelta(days=7):
+                        from_cache = False
+                _res = await requests(_url, _client, from_cache=from_cache, save_cache=True)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _total_res = int(_soup.select_one("div.sttl em").text.split(" ")[-2])
                 _total_page = _total_res // 20
@@ -406,7 +441,7 @@ class Myself:
                     page_num -= 1
                 for _page_index in range(start_page, start_page + page_num):
                     _res_task.append(create_task(
-                        requests(f"{_redirect_url}&page={_page_index}", _client, from_cache=from_cache)
+                        requests(f"{_redirect_url}&page={_page_index}", _client, from_cache=from_cache, save_cache=True)
                     ))
                 if len(_res_task) != 0:
                     _res_results = await gather(*_res_task)

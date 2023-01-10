@@ -1,8 +1,12 @@
+from configs import *
+
+from datetime import datetime
 from os import makedirs
 from os.path import isfile, isdir, join, split as ossplit
 from urllib.parse import urlsplit
 
 from aiofiles import open as a_open
+from aiosqlite import connect
 
 _STRIP = " \"\n\r"
 BAN_CHAR = "\\/:*?\"<>|"
@@ -48,5 +52,48 @@ class Cache:
         _cache_dir, _cache_path = _url2cache_path(url)
         if not isdir(_cache_dir):
             makedirs(_cache_dir)
+        
+        async with connect("data.db") as db:
+            async with db.cursor() as cursor:
+                await cursor.execute(
+                    "SELECT update_time FROM cache WHERE url=:url",
+                    {"url": url}
+                )
+                if await cursor.fetchone() != None:
+                    await cursor.execute(
+                        "UPDATE cache SET update_time=:update_time WHERE url=:url",
+                        {"update_time": datetime.now(TIMEZONE).isoformat(), "url": url}
+                    )
+                else:
+                    await cursor.execute(
+                        "INSERT INTO cache (url, update_time) VALUES (:url, :update_time)",
+                        {"update_time": datetime.now(TIMEZONE).isoformat(), "url": url}
+                    )
+            await db.commit()
+
         async with a_open(_cache_path, mode="wb") as _file:
             return await _file.write(content)
+    
+    @staticmethod
+    async def get_update_time(url: str) -> datetime:
+        async with connect("data.db") as db:
+            async with db.cursor() as cursor:
+                await cursor.execute(
+                    "SELECT update_time FROM cache WHERE url=:url",
+                    {"url": url}
+                )
+                _res = await cursor.fetchone()
+                if _res == None:
+                    return datetime.fromtimestamp(0, TIMEZONE)
+                _res = _res[0]
+                
+                _, _cache_path = _url2cache_path(url)
+                if not isfile(_cache_path):
+                    await cursor.execute(
+                        "DELETE FROM cache WHERE url=:url",
+                        {"url": url}
+                    )
+                    await db.commit()
+                    return datetime.fromtimestamp(0, TIMEZONE)
+
+                return datetime.fromisoformat(_res)

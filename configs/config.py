@@ -5,6 +5,8 @@ from datetime import timedelta, timezone
 from logging import getLevelName
 from typing import Union
 
+from sqlite3 import connect
+
 # CRITICAL
 # ERROR
 # WARNING
@@ -48,9 +50,6 @@ CONFIG: dict[str, dict] = {
         "dir_name": "[Myself]$NAME",
         "download_path": "download/myself",
     },
-    "sql": {
-        "database": "data",
-    },
     "logging": {
         "main": {
             "stream_level": "INFO",
@@ -67,7 +66,7 @@ CONFIG: dict[str, dict] = {
             "dir_path": "logs",
         },
         "web": {
-            "stream_level": "INFO",
+            "stream_level": "WARNING",
             "file_level": "INFO",
             "backup_count": 10,
             "file_name": "web",
@@ -107,8 +106,6 @@ MYSELF_FILE: str = CONFIG["myself"]["file_name"]
 MYSELF_DIR: str = CONFIG["myself"]["dir_name"]
 MYSELF_DOWNLOAD: str = CONFIG["myself"]["download_path"]
 
-SQL_DB = f"{CONFIG['sql']['database']}.db",
-
 LOGGING_CONFIG: dict[str, LoggingConfig] = {
     "main": LoggingConfig(CONFIG["logging"]["main"]),
     "myself": LoggingConfig(CONFIG["logging"]["myself"]),
@@ -119,3 +116,38 @@ TIMEZONE: timezone = timezone(timedelta(hours=CONFIG["timezone"]))
 FFMPEG_ARGS: str = CONFIG["ffmpeg_args"]
 
 MYSELF_URL = "https://myself-bbs.com"
+
+with connect("data.db") as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type=\"table\";")
+    table_list = map(lambda tup: tup[0], cursor.fetchall())
+    if "cache" not in table_list:
+        cursor.execute("""
+            CREATE TABLE "cache" (
+                "url"    TEXT NOT NULL UNIQUE,
+                "update_time"    TEXT NOT NULL DEFAULT '1970-01-01T00:00:00',
+                PRIMARY KEY("url")
+            );
+        """)
+    # if "download_history" not in table_list:
+    #     cursor.execute("""
+    #         CREATE TABLE "download_history" (
+    #             "uid"    INTEGER NOT NULL UNIQUE,
+    #             "host"    TEXT NOT NULL,
+    #             "m3u8_file"    TEXT NOT NULL,
+    #             "output_name"    TEXT NOT NULL,
+    #             "output_dir"    TEXT NOT NULL,
+    #             "status_code"    INTEGER NOT NULL DEFAULT 4,
+    #             PRIMARY KEY("uid" AUTOINCREMENT)
+    #         );
+    #     """)
+    # if "file_path" not in table_list:
+    #     cursor.execute("""
+    #         CREATE TABLE "file_path" (
+    #             "uid"    INTEGER NOT NULL UNIQUE,
+    #             "tid"    TEXT NOT NULL,
+    #             "vid"    TEXT NOT NULL,
+    #             "path"    TEXT NOT NULL,
+    #             PRIMARY KEY("uid" AUTOINCREMENT)
+    #         );
+    #     """)
