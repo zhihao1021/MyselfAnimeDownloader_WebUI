@@ -32,8 +32,12 @@
 2. 修正Myself Method中search語法錯誤(CSS Selector)
 3. M3U8下載失誤自動修正新增檢查條件-檔案完整度
 4. Web UI每周列表完成。
+5. Web UI年表完成。
+6. 基礎Read From Cache完成。
 ```
 
+---TODO Detail---
+1. Cache更新
 ---
 
 ## 2023/01/08

@@ -1,8 +1,7 @@
 {
     "typeAcquisition": {
         "include": [
-            "jquery",
-            "js-cookie"
+            "jquery"
         ]
     }
 }

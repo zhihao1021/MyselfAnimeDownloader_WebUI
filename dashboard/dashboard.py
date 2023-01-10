@@ -1,10 +1,13 @@
+from async_io import requests
 from api import API
 from configs import *
 from modules import Json
 
 from asyncio import new_event_loop
+from io import BytesIO
+from os.path import split as ossplit
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from eventlet import listen, wsgi
 
 class Dashboard:
@@ -29,6 +32,24 @@ class Dashboard:
     def include_html(filename):
         try: return render_template(filename)
         except: return "", 404
+    
+    # Image Cache
+    @app.route("/image_cache", methods=["POST", "GET"])
+    def image_cache():
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.values.to_dict()
+        loop = new_event_loop()
+        _url = data.get("url")
+        _, _filename = ossplit(_url)
+        res = loop.run_until_complete(requests(_url, from_cache=True))
+        return send_file(
+            BytesIO(res),
+            mimetype='image/jpeg',
+            as_attachment=False,
+            download_name=_filename
+        )
     
     # 對貯列進行操作
     @app.route("/api/queue-modify", methods=["POST", "GET"])
@@ -109,3 +130,9 @@ class Dashboard:
     def get_week_anime():
         loop = new_event_loop()
         return loop.run_until_complete(API.get_week_anime())
+    
+    # 取得動畫年表
+    @app.route("/api/get-year-anime", methods=["POST", "GET"])
+    def get_year_anime():
+        loop = new_event_loop()
+        return loop.run_until_complete(API.get_year_anime())

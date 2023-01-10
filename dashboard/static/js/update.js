@@ -31,6 +31,12 @@ function get_week_anime() {
             else {
                 ele.classList.remove("act");
             }
+            ele.querySelectorAll(".ani-block").forEach((block)=>{
+                ele.removeChild(block);
+            });
+            ele.querySelectorAll("hr").forEach((block)=>{
+                ele.removeChild(block);
+            });
         })
 
         data.forEach((day_data, index)=>{
@@ -70,6 +76,54 @@ function get_week_anime() {
                     week_ele[index].appendChild(hr);
                 }
             })
+        });
+    })
+}
+
+function get_year_anime() {
+    $.getJSON("/api/get-year-anime", "", (data)=>{
+        let keys = Object.keys(data).reverse();
+        let page = document.querySelector("#update-year");
+
+        page.querySelectorAll(".season-block").forEach((ele)=>{
+            page.removeChild(ele);
+        })
+
+        keys.forEach((key)=>{
+            let anime_list = data[key];
+            let season_block = document.createElement("div");
+            season_block.classList.add("season-block");
+
+            let season_title = document.createElement("div");
+            season_title.classList.add("title");
+            season_title.textContent = key;
+            season_block.appendChild(season_title);
+
+            let hr = document.createElement("hr");
+            hr.classList.add("hor-hr");
+            season_block.appendChild(hr);
+
+            let animes = document.createElement("div");
+            animes.classList.add("animes");
+
+            anime_list.forEach((anime)=>{
+                let ele = document.createElement("div");
+                ele.classList.add("anime-block");
+
+                let p = document.createElement("p");
+                p.url = anime.URL;
+                p.onclick = function () {
+                    search(this.url);
+                    _last_page = 4;
+                }
+                p.textContent = anime.NAME;
+                p.title = anime.NAME;
+                ele.appendChild(p);
+
+                animes.appendChild(ele);
+            })
+            season_block.appendChild(animes);
+            page.appendChild(season_block);
         });
     })
 }

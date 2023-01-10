@@ -6,6 +6,7 @@ from asyncio import sleep as a_sleep, create_task, gather
 from os.path import split as ossplit
 from traceback import format_exception
 from typing import Optional
+from unicodedata import normalize
 from urllib.parse import parse_qs, urlencode, urljoin
 
 from aiohttp import ClientSession
@@ -14,6 +15,7 @@ from websockets.client import connect as ws_connect, WebSocketClientProtocol
 
 _STRIP = " \"\n\r"
 BAN_CHAR = "\\/:*?\"<>|"
+UNICODE_CODE = "NFKC"
 
 def retouch_name(name: str) -> str:
     """
@@ -42,7 +44,10 @@ class MyselfAnime:
         vid: :class:`str`
             影片ID。
         """
-        self.EPS_NAME = episode_name.strip(_STRIP)
+        episode_name = episode_name.replace("\r", "")
+        episode_name = episode_name.strip(_STRIP)
+        self.EPS_NAME = normalize(UNICODE_CODE, episode_name)
+        # self.EPS_NAME = episode_name
         self.TID = tid.strip(_STRIP)
         self.VID = vid.strip(_STRIP)
     
@@ -117,18 +122,26 @@ class MyselfAnimeTable:
         self.TID = _page.split("-")[1] # 48821
         if name != None:
             name = name.replace("\r", "")
-            self.NAME = name.strip(_STRIP)
+            name = name.strip(_STRIP)
+            self.NAME = normalize(UNICODE_CODE, name)
+            # self.NAME = name
 
-    async def update(self, _client: Optional[ClientSession]=None) -> None:
+    async def update(self, _client: Optional[ClientSession]=None, from_cache=True) -> None:
         """
         更新資料。
+
+        from_cache: :class:`bool`
+            是否從硬碟快取讀取。
         """
-        _res = await requests(self.URL, _client)
+        _res = await requests(self.URL, _client, from_cache=from_cache)
         _soup = BeautifulSoup(_res, features="html.parser")    # 網頁本體
         _info_list = _soup.select("div.info_info li")   # 資訊欄列表
         _anime_list = _soup.select("ul.main_list > li") # 動畫列表
 
-        self.NAME = _soup.select_one("meta[name='keywords']")["content"].strip()
+        _name = _soup.select_one("meta[name='keywords']")["content"]
+        _name = _name.replace("\r", "")
+        _name = _name.strip(_STRIP)
+        self.NAME = normalize(UNICODE_CODE, _name)
         self.ANI_TYPE     = _info_list[0].text.split(":", 1)[1].strip(_STRIP)
         self.PRE_DATE     = _info_list[1].text.split(":", 1)[1].strip(_STRIP)
         self.EPS_NUM      = _info_list[2].text.split(":", 1)[1].strip(_STRIP)
@@ -179,7 +192,7 @@ class MyselfAnimeTable:
 
 class Myself:
     @staticmethod
-    async def weekly_update(update: bool=False, _client: Optional[ClientSession]=None) -> list[list[tuple[MyselfAnimeTable, str]]]:
+    async def weekly_update(update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> list[list[tuple[MyselfAnimeTable, str]]]:
         """
         爬首頁的每週更新表。
         index 0 對應星期一。
@@ -196,7 +209,7 @@ class Myself:
             need_close = True
         while True:
             try:
-                _res = await requests(urljoin(MYSELF_URL, "portal.php"), _client)
+                _res = await requests(urljoin(MYSELF_URL, "portal.php"), _client, from_cache=from_cache)
                 _soup = BeautifulSoup(_res, features="html.parser")           # 網頁主體
                 _week_table = _soup.select("#tabSuCvYn div.module.cl.xl.xl1") # 每周更新列表
 
@@ -211,7 +224,7 @@ class Myself:
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
                         if update: tasks.append(
-                            create_task(_anime_table.update(_client))
+                            create_task(_anime_table.update(_client, from_cache=from_cache))
                         )
                         result[_index].append((
                             _anime_table,
@@ -227,7 +240,7 @@ class Myself:
                 await a_sleep(5)
 
     @staticmethod
-    async def year_list(update: bool=False, _client: Optional[ClientSession]=None) -> dict[str, list[MyselfAnimeTable]]:
+    async def year_list(update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> dict[str, list[MyselfAnimeTable]]:
         """
         取得年分列表頁面的動漫資訊。
 
@@ -244,7 +257,7 @@ class Myself:
             need_close = True
         while True:
             try:
-                _res = await requests(urljoin(MYSELF_URL, "portal.php?mod=topic&topicid=8"), _client)
+                _res = await requests(urljoin(MYSELF_URL, "portal.php?mod=topic&topicid=8"), _client, from_cache=from_cache)
                 _soup = BeautifulSoup(_res, features="html.parser")                            # 網頁主體
                 _season_table = _soup.select("div.frame-tab.move-span.cl div.block.move-span") # 每一季動畫列表
                 """
@@ -256,14 +269,15 @@ class Myself:
                 if update: tasks = []
                 for _season in _season_table:
                     _season_title = _season.select_one("span.titletext").text
+                    _season_title = normalize(UNICODE_CODE, _season_title)
                     _season_list = []
                     for _anime_tag in _season.select("a"):
                         _anime_url = urljoin(MYSELF_URL, _anime_tag["href"])
-                        _anime_name = _anime_tag.text.strip()
+                        _anime_name = _anime_tag["title"].strip()
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
                         if update: tasks.append(
-                            create_task(_anime_table.update(_client))
+                            create_task(_anime_table.update(_client, from_cache=from_cache))
                         )
                         _season_list.append(_anime_table)
 
@@ -278,7 +292,7 @@ class Myself:
                 await a_sleep(5)
     
     @staticmethod
-    async def finish_list(start_page: int=1, page_num: int=100, update: bool=False, _client: Optional[ClientSession]=None) -> list[MyselfAnimeTable]:
+    async def finish_list(start_page: int=1, page_num: int=100, update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> list[MyselfAnimeTable]:
         """
         取得年分列表頁面的動漫資訊。
 
@@ -300,7 +314,7 @@ class Myself:
         page_num = max(1, page_num)
         while True:
             try:
-                _res = await requests(urljoin(MYSELF_URL, "forum-113-1.html"), _client)
+                _res = await requests(urljoin(MYSELF_URL, "forum-113-1.html"), _client, from_cache=from_cache)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _total_page = int(_soup.select_one("label span")["title"].split(" ")[1])
                 start_page = min(_total_page, start_page)
@@ -314,7 +328,7 @@ class Myself:
                     page_num -= 1
                 for _page_index in range(start_page, start_page + page_num):
                     _res_task.append(create_task(
-                        requests(urljoin(MYSELF_URL, f"forum-113-{_page_index}.html"), _client)
+                        requests(urljoin(MYSELF_URL, f"forum-113-{_page_index}.html"), _client, from_cache=from_cache)
                     ))
                 if len(_res_task) != 0:
                     _res_results = await gather(*_res_task)
@@ -330,7 +344,7 @@ class Myself:
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
                         if update: tasks.append(
-                            create_task(_anime_table.update(_client))
+                            create_task(_anime_table.update(_client, from_cache=from_cache))
                         )
                         result.append(_anime_table)
                 if update:
@@ -343,7 +357,7 @@ class Myself:
                 await a_sleep(5)
 
     @staticmethod
-    async def search(keyword: str, start_page: int=1, page_num: int=25, update: bool=False, _client: Optional[ClientSession]=None) -> list[MyselfAnimeTable]:
+    async def search(keyword: str, start_page: int=1, page_num: int=25, update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> list[MyselfAnimeTable]:
         """
         搜尋動漫。
 
@@ -374,9 +388,9 @@ class Myself:
                     ("srchfid[]", 137),
                     ("searchsubmit", "yes"),
                 ]
-                _raw_res = await requests(urljoin(MYSELF_URL, f"/search.php?{urlencode(_query_list)}"), _client, raw=True)
+                _raw_res = await requests(urljoin(MYSELF_URL, f"/search.php?{urlencode(_query_list)}"), _client, raw=True, from_cache=from_cache)
                 _redirect_url = _raw_res.url
-                _res = await requests(f"{_redirect_url}&page={start_page}", _client)
+                _res = await requests(f"{_redirect_url}&page={start_page}", _client, from_cache=from_cache)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _total_res = int(_soup.select_one("div.sttl em").text.split(" ")[-2])
                 _total_page = _total_res // 20
@@ -392,7 +406,7 @@ class Myself:
                     page_num -= 1
                 for _page_index in range(start_page, start_page + page_num):
                     _res_task.append(create_task(
-                        requests(f"{_redirect_url}&page={_page_index}", _client)
+                        requests(f"{_redirect_url}&page={_page_index}", _client, from_cache=from_cache)
                     ))
                 if len(_res_task) != 0:
                     _res_results = await gather(*_res_task)
@@ -409,7 +423,7 @@ class Myself:
 
                         _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
                         if update: tasks.append(
-                            create_task(_anime_table.update(_client))
+                            create_task(_anime_table.update(_client, from_cache=from_cache))
                         )
                         result.append(_anime_table)
                 if update:

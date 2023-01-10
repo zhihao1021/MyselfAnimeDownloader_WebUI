@@ -53,7 +53,7 @@ function update_results(data) {
 
 // 更新資料頁面
 function update_anime(data) {
-    document.querySelector("#anime-img").src = data.IMAGE_URL
+    document.querySelector("#anime-img").src = `/image_cache?url=${data.IMAGE_URL}`
 
     document.querySelector("#anime-name .a-content").textContent = data.NAME
     document.querySelector("#anime-type .a-content").textContent = data.ANI_TYPE

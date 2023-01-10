@@ -1,5 +1,6 @@
 #update-week {
     display: flex;
+    height: 100%;
     overflow-y: auto;
     gap: 8px;
     align-items: flex-start;

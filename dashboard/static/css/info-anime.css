@@ -69,7 +69,8 @@
 }
 #info-anime .info-block .anime .anime-data {
     display: grid;
-    grid-template-columns: 50% 50%;
+    grid-template-columns: calc(50% - 3px) calc(50% - 3px);
+    /* grid-template-columns: auto auto; */
     grid-template-rows: 32px 32px 32px 32px;
     gap: 6px;
 }

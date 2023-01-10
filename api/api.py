@@ -131,4 +131,16 @@ class API:
         ))
         
         return _result
+
+    @staticmethod
+    async def get_year_anime():
+        def map_animetable(animetable: MyselfAnimeTable):
+            return animetable.__dict__
+        _year_dict = await Myself.year_list()
+
+        _result = {}
+        for _key, _value in _year_dict.items():
+            _result[_key] = list(map(map_animetable, _value))
+        
+        return _result
     
