@@ -136,3 +136,4 @@ debug.html
 *.exe
 temp
 cache/
+*.db

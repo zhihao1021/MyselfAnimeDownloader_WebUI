@@ -34,7 +34,8 @@ async def requests(
     headers: Optional[dict]=None,
     cookies: Optional[dict[str, str]]=None,
     raw: bool=False,
-    from_cache: bool=False
+    from_cache: bool=False,
+    save_cache: bool=False
 ) -> Optional[Union[bytes, CIMultiDictProxy, ClientResponse]]:
     """
     非同步請求。
@@ -45,6 +46,8 @@ async def requests(
         請求方法。
     from_cache: :class:`bool`
         是否從硬碟快取讀取。
+    save_cache: :class:`bool`
+        是否將快取儲存至硬碟。
     
     return: :class:`Optional[Union[bytes, CIMultiDictProxy, ClientResponse]]`
     """
@@ -53,6 +56,7 @@ async def requests(
         need_close = False
 
         if from_cache:
+            save_cache = True
             if Cache.is_cached(url):
                 return await Cache.read_cache(url)
 
@@ -79,7 +83,7 @@ async def requests(
         else:
             result = await _res.content.read()
 
-            if from_cache or Cache.is_cached(url):
+            if save_cache:
                 await Cache.write_cache(url, result)
 
         if need_close: await _client.close()
