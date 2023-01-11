@@ -51,7 +51,7 @@
     border-style: none;
     border-bottom-style: solid;
     border-width: 1px;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     caret-color: rgb(var(--contrast-color));
     outline: none;
     font-size: 16px;

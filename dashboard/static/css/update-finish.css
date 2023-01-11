@@ -1,0 +1,32 @@
+#update-finish {
+    display: grid;
+    grid-template-columns: repeat(7, calc(14.3% - 10px));
+    gap: 12px;
+}
+
+#update-finish .anime-box {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(var(--secondground-color));
+    border-radius: 8px;
+    user-select: none;
+    cursor: pointer;
+}
+
+#update-finish .anime-box img {
+    width: calc(100% - 16px);
+    margin: 8px;
+    margin-bottom: 0px;
+}
+
+#update-finish .anime-box p {
+    height: 64px;
+    margin: 0px 8px;
+    color: rgb(var(--contrast-color));
+    font-size: 20px;
+    transition: 0.2s;
+    text-align: center;
+}
+#update-finish .anime-box:hover p {
+    color: rgb(var(--sec-contrast-color));
+}

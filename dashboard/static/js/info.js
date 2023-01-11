@@ -2,10 +2,12 @@ let _last_episode, _last_page = 3;
 
 // 顯示分頁
 function show_page(page=_last_page) {
-    document.querySelector("#info-loading").style.display = "none";
-    document.querySelector("#info-results").style.display = "none";
-    document.querySelector("#info-anime").style.display = "none";
-    document.querySelector("#info-search").style.display = "none";
+    if (page != 4) {
+        document.querySelector("#info-loading").style.display = "none";
+        document.querySelector("#info-results").style.display = "none";
+        document.querySelector("#info-anime").style.display = "none";
+        document.querySelector("#info-search").style.display = "none";
+    }
     switch (page) {
         case 0:
             document.querySelector("#info-loading").style.display = "";

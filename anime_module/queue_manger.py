@@ -25,14 +25,18 @@ class VideoQueue:
         self._download_list = []
         # 同時下載數量
         self._thread_num = thread_num
+
+        self.__uuid = uuid1().hex[:8]
         
-        Thread(target=self._thread_job).start()
+        Thread(target=self._thread_job, name=f"VideoQueue-{self.__uuid}").start()
     
     def _thread_job(self):
         loop = new_event_loop()
         self._coro_list = []
         for _ in range(self._thread_num):
-            self._coro_list.append(loop.create_task(self._manage_job()))
+            self._coro_list.append(
+                loop.create_task(self._manage_job(), name=f"VQ-{self.__uuid} Manger")
+            )
         
         loop.run_until_complete(gather(*self._coro_list, return_exceptions=True))
     

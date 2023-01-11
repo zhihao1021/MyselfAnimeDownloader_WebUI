@@ -54,7 +54,7 @@ class API:
         return _result
     
     @staticmethod
-    async def search(data: dict):
+    async def search(data: dict, from_cache=True):
         def map_animetable(animetable: MyselfAnimeTable):
             _result = animetable.__dict__
             if animetable.updated:
@@ -70,17 +70,17 @@ class API:
             # 如果搜尋連結
             _anime_table = MyselfAnimeTable(_keyword)
             try:
-                await _anime_table.update()
+                await _anime_table.update(from_cache=from_cache)
                 _anime_dict = map_animetable(_anime_table)
                 return {
                     "type": "anime",
                     "data": _anime_dict
                 }
             except: pass
-        _search_result = await Myself.search(_keyword)
+        _search_result = await Myself.search(_keyword, from_cache=from_cache)
         if len(_search_result) == 1:
             _anime_table = _search_result[0]
-            await _anime_table.update()
+            await _anime_table.update(from_cache=from_cache)
             _anime_dict = map_animetable(_anime_table)
             return {
                 "type": "anime",
@@ -118,12 +118,12 @@ class API:
         return ""
 
     @staticmethod
-    async def get_week_anime():
+    async def get_week_anime(from_cache=True):
         def map_animetable(animetable_tuple: tuple[MyselfAnimeTable, str]):
             animetable, update_text = animetable_tuple
             return (animetable.__dict__, update_text)
 
-        _week_list = await Myself.weekly_update()
+        _week_list = await Myself.weekly_update(from_cache=from_cache)
 
         _result = list(map(
             lambda _day_data: list(map(map_animetable, _day_data)),
@@ -133,14 +133,24 @@ class API:
         return _result
 
     @staticmethod
-    async def get_year_anime():
+    async def get_year_anime(from_cache=True):
         def map_animetable(animetable: MyselfAnimeTable):
             return animetable.__dict__
-        _year_dict = await Myself.year_list()
+        _year_dict = await Myself.year_list(from_cache=from_cache)
 
         _result = {}
         for _key, _value in _year_dict.items():
             _result[_key] = list(map(map_animetable, _value))
+        
+        return _result
+    
+    @staticmethod
+    async def get_finish_anime(from_cache=True):
+        def map_animetable(animetable: MyselfAnimeTable):
+            return animetable.__dict__
+        _finish_list = await Myself.finish_list(from_cache=from_cache)
+
+        _result = list(map(map_animetable, _finish_list))
         
         return _result
     
