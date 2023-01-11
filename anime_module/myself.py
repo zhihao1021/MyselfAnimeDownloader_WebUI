@@ -109,7 +109,7 @@ class MyselfAnimeTable:
     IMAGE_URL: str                # 縮圖連結
     VIDEO_LIST: list[MyselfAnime] # 影片清單
     updated: bool = False         # 是否已經更新資料
-    def __init__(self, url: str, *, name: Optional[str]=None) -> None:
+    def __init__(self, url: str, *, name: Optional[str]=None, image_url: Optional[str]=None) -> None:
         """
         Myself動畫資料。
 
@@ -117,6 +117,8 @@ class MyselfAnimeTable:
             網址。
         name: :class:`str`
             在不更新的情形下指定名稱(用於列表)。
+        image_url: :class:`str`
+            在不更新的情形下指定縮圖(用於完結列表)。
         """
         self.URL = url.strip(_STRIP)   # https://myself-bbs.com/thread-48821-1-1.html
         _page = url.split("/")[-1]     # thread-48821-1-1.html
@@ -126,6 +128,8 @@ class MyselfAnimeTable:
             name = name.strip(_STRIP)
             self.NAME = normalize(UNICODE_CODE, name)
             # self.NAME = name
+        if image_url != None:
+            self.IMAGE_URL = image_url
 
     async def update(self, _client: Optional[ClientSession]=None, from_cache=True) -> None:
         """
@@ -134,7 +138,7 @@ class MyselfAnimeTable:
         from_cache: :class:`bool`
             是否從硬碟快取讀取。
         """
-        _res = await requests(self.URL, _client, from_cache=from_cache)
+        _res = await requests(self.URL, _client, from_cache=from_cache, save_cache=True)
         _soup = BeautifulSoup(_res, features="html.parser") # 網頁本體
         if from_cache:
             # 檢查是否為完結動畫
@@ -188,6 +192,7 @@ class MyselfAnimeTable:
             ]
         else:
             if hasattr(self, "NAME"): data.append(f"name={self.NAME}")
+            if hasattr(self, "IMAGE_URL"): data.append(f"img-url={self.IMAGE_URL}")
         _data_text = " ".join(data)
         return f"<{_class_name} TID={self.TID} URL=\"{self.URL}\" <{_data_text}>>"
     def __repr__(self) -> str:
@@ -366,12 +371,13 @@ class Myself:
                 result = []
                 if update: tasks = []
                 for _soup in _soup_list:
-                    _anime_list = _soup.select("ul.ml.mlt.mtw.cl h3 a")
+                    _anime_list = _soup.select("ul.ml.mlt.mtw.cl div.c.cl a")
                     for _anime_tag in _anime_list:
                         _anime_url = urljoin(MYSELF_URL, _anime_tag["href"])
-                        _anime_name = _anime_tag.text.strip()
+                        _anime_img = urljoin(MYSELF_URL, _anime_tag.select_one("img")["src"])
+                        _anime_name = _anime_tag["title"].strip()
 
-                        _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name)
+                        _anime_table = MyselfAnimeTable(_anime_url, name=_anime_name, image_url=_anime_img)
                         if update: tasks.append(
                             create_task(_anime_table.update(_client, from_cache=from_cache))
                         )

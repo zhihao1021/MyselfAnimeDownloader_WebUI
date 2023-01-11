@@ -25,12 +25,26 @@
 
 ---
 
+## 2023/01/11
+```
+---Log---
+1. 自訂介面色彩完成。
+2. 新增刷新頁面按鈕(從伺服器而非快取存取資訊)。
+3. 更新dashboard.py中asyncio loop回收。
+4. Web UI完結動畫列表。
+
+---TODO Detail---
+1. 圖片快取限速&改為非同步
+```
+
+---
+
 ## 2023/01/10
 ```
 ---Log---
-1. 修正Web UI動畫資料顯示問題
-2. 修正Myself Method中search語法錯誤(CSS Selector)
-3. M3U8下載失誤自動修正新增檢查條件-檔案完整度
+1. 修正Web UI動畫資料顯示問題。
+2. 修正Myself Method中search語法錯誤(CSS Selector)。
+3. M3U8下載失誤自動修正新增檢查條件-檔案完整度。
 4. Web UI每周列表完成。
 5. Web UI年表完成。
 6. Read From Cache完成。

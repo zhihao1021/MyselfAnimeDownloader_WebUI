@@ -1,4 +1,4 @@
-@import url(update-all.css);
+@import url(update-finish.css);
 @import url(update-year.css);
 @import url(update-week.css);
 
@@ -41,8 +41,15 @@
 #update .update-switch button:first-of-type {
     border-radius: 6px 0px 0px 6px;
 }
-#update .update-switch button:last-of-type {
+#update .update-switch button:nth-last-of-type(2) {
     border-radius: 0px 6px 6px 0px;
+}
+#update .update-switch button:last-of-type {
+    border-radius: 6px;
+}
+
+#update .update-switch .empty {
+    flex: 1;
 }
 
 #update .update-page {

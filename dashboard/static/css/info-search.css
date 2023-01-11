@@ -14,12 +14,12 @@
 #info-search input {
     width: 35%;
     height: 36px;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
     background-color: transparent;
     border-style: none;
     border-width: 1px;
     border-bottom-style: solid;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     caret-color: rgb(var(--contrast-color));
     outline: none;
     font-size: 24px;

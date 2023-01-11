@@ -9,3 +9,65 @@
         <a href="https://github.com/AloneAlongLife/MyselfAnimeDownloader_WebUI" target="_blank">點擊前往</a>
     </div>
 </div>
+<div class="setting-box">
+    <div class="title">UI 設定</div>
+    <hr>
+    <div class="row">
+        <div class="name">第一背景色 :</div>
+        <div class="remark">R</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">G</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">B</div>
+        <input type="number" max="255" min="0", step="1">
+    </div>
+    <div class="row">
+        <div class="name">第二背景色 :</div>
+        <div class="remark">R</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">G</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">B</div>
+        <input type="number" max="255" min="0", step="1">
+    </div>
+    <div class="row">
+        <div class="name">第一對比色 :</div>
+        <div class="remark">R</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">G</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">B</div>
+        <input type="number" max="255" min="0", step="1">
+    </div>
+    <div class="row">
+        <div class="name">第二對比色 :</div>
+        <div class="remark">R</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">G</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">B</div>
+        <input type="number" max="255" min="0", step="1">
+    </div>
+    <div class="row">
+        <div class="name">輔色 :</div>
+        <div class="remark">R</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">G</div>
+        <input type="number" max="255" min="0", step="1">
+        <div class="remark">B</div>
+        <input type="number" max="255" min="0", step="1">
+    </div>
+    <hr>
+    <div class="button-box">
+        <button onclick="set_custom();">保存</button>
+        <button onclick="read_custom();">重設</button>
+        <button onclick="restore_custom();">恢復預設</button>
+        <button class="switch-custom" onclick="switch_custom(this);">開啟自訂色彩</button>
+    </div>
+</div>
+<script>
+    read_custom();
+    if (Cookies.get("custom_color") == "1") {
+        document.querySelector("#about .button-box .switch-custom").textContent = "關閉自訂色彩";
+    }
+</script>

@@ -8,14 +8,18 @@
     <button onclick="show_update(0)">
         <p>完結列表</p>
     </button>
+    <div class="empty"></div>
+    <button onclick="no_cache_reload();">
+        <p class="ms">refresh</p><p>刷新列表</p>
+    </button>
 </div>
 <div class="update-page">
-    <div id="update-all" style="display: none;"></div>
+    <div id="update-finish" style="display: none;"></div>
     <div id="update-year" style="display: none;"></div>
     <div id="update-week"></div>
 </div>
 <script>
-    $("#update-all").load("/include-html/update-all.html");
+    $("#update-finish").load("/include-html/update-finish.html");
     $("#update-year").load("/include-html/update-year.html");
     $("#update-week").load("/include-html/update-week.html");
 </script>
