@@ -1,7 +1,8 @@
 from async_io import requests, Cache
 from api import API
 from configs import *
-from modules import Json, Thread
+from modules import Json
+from swap import IMAGE_CACHE_QUEUE
 
 from asyncio import new_event_loop
 from io import BytesIO
@@ -9,11 +10,6 @@ from os.path import split as ossplit
 
 from flask import Flask, redirect, render_template, request, send_file
 from eventlet import listen, wsgi
-
-def _new_img(url):
-    loop = new_event_loop()
-    loop.run_until_complete(requests(url, from_cache=True))
-    loop.close()
 
 class Dashboard:
     app = Flask(__name__)
@@ -58,8 +54,7 @@ class Dashboard:
                 download_name=_filename
             )
         else:
-            # TODO 限速
-            Thread(target=_new_img, args=(_url,)).start()
+            IMAGE_CACHE_QUEUE.add_nowait(_url)
             return redirect(_url)
     
     # 對貯列進行操作
@@ -183,10 +178,11 @@ class Dashboard:
         else:
             data = request.values.to_dict()
         from_cache = data.get("from_cache", True)
+        page_index = int(data.get("page_index", 1))
         if type(from_cache) == str:
             if from_cache == "false": from_cache = False
             else: from_cache = True
         loop = new_event_loop()
-        res = loop.run_until_complete(API.get_finish_anime(from_cache=from_cache))
+        res = loop.run_until_complete(API.get_finish_anime(from_cache=from_cache, page_index=page_index))
         loop.close()
         return res

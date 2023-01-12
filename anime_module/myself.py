@@ -320,7 +320,7 @@ class Myself:
                 await a_sleep(5)
     
     @staticmethod
-    async def finish_list(start_page: int=1, page_num: int=100, update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> list[MyselfAnimeTable]:
+    async def finish_list(start_page: int=1, page_num: int=150, update: bool=False, _client: Optional[ClientSession]=None, from_cache=True) -> list[MyselfAnimeTable]:
         """
         取得完結列表頁面的動漫資訊。
 
@@ -351,7 +351,8 @@ class Myself:
                 _res = await requests(_url, _client, from_cache=from_cache, save_cache=True)
                 _soup = BeautifulSoup(_res, features="html.parser") # 網頁主體
                 _total_page = int(_soup.select_one("label span")["title"].split(" ")[1])
-                start_page = min(_total_page, start_page)
+                if (start_page > _total_page): return []
+                # start_page = min(_total_page, start_page)
                 page_num = min(page_num, _total_page - start_page + 1)
 
                 _soup_list: list[BeautifulSoup] = []
