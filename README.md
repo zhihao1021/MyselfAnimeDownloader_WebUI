@@ -1,8 +1,8 @@
 # MyselfAnimeDownloader_WebUI
 Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/hgalytoby/MyselfAnimeDownloader
 
-## 注意!!
-這個專案還沒完成，所以沒辦法執行
+## 當前版本
+Release 1.0
 
 ## 運行依賴
 1.此專案依賴於`FFmpeg`，請確保在電腦環境中有`FFmpeg`。
@@ -13,6 +13,15 @@ Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/
  - 3.輸入後請確保畫面中有出現類似以下內容之畫面。
    ![Imgur](https://i.imgur.com/Pc3L0nl.png)
  - 4.如果出現`ffmpeg' 不是內部或外部命令、可執行的程式或批次檔。`，請依照[說明](#附錄-安裝ffmpeg)安裝`FFmpeg`。
+
+## 運行說明 - 透過EXE
+1.前往[Release](https://github.com/AloneAlongLife/MyselfAnimeDownloader_WebUI/releases/latest)頁面。
+
+2.選擇`MyselfAnimeDownloader WebUI.exe`並下載。
+
+3.下載完成後啟動程式，Windwos會跳出警示~~因為我沒買憑證~~，請按`其他資訊 > 仍要執行`。
+
+4.完成。
 
 ## 運行說明 - 透過Python
 1.建議使用`Python 3.10`以上的版本<br>
@@ -29,8 +38,8 @@ Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/
 5.運行程式<br>
 使用`python3 main.py`運行程式。
 
-## 開發日誌(2023/01/10)
-[查看開發日誌](UpdateLog.md/#20230110)
+## 開發日誌(2023/01/12)
+[查看開發日誌](UpdateLog.md/#20230112)
 
 ## 開發環境
 ```

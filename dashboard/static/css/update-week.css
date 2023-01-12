@@ -73,7 +73,7 @@
     height: 20px;
     margin: 0px 4px;
     text-align: right;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
 }
 
 #update-week .week-day .no-ani {

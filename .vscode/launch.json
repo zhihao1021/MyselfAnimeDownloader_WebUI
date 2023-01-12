@@ -11,6 +11,7 @@
             "program": "${workspaceFolder}/dev_main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
+            "gevent": true,
         },
         {
             "name": "Python: Current File",

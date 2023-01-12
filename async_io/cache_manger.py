@@ -1,5 +1,6 @@
 from configs import *
 
+from asyncio import Lock
 from datetime import datetime
 from os import makedirs
 from os.path import isfile, isdir, join, split as ossplit
@@ -95,5 +96,4 @@ class Cache:
                     )
                     await db.commit()
                     return datetime.fromtimestamp(0, TIMEZONE)
-
                 return datetime.fromisoformat(_res)

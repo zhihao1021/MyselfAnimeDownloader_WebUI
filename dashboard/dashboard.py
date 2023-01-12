@@ -1,13 +1,14 @@
-from async_io import requests
+from async_io import requests, Cache
 from api import API
 from configs import *
 from modules import Json
+from swap import IMAGE_CACHE_QUEUE
 
 from asyncio import new_event_loop
 from io import BytesIO
 from os.path import split as ossplit
 
-from flask import Flask, render_template, request, send_file
+from flask import Flask, redirect, render_template, request, send_file
 from eventlet import listen, wsgi
 
 class Dashboard:
@@ -40,16 +41,21 @@ class Dashboard:
             data = request.get_json()
         else:
             data = request.values.to_dict()
-        loop = new_event_loop()
         _url = data.get("url")
         _, _filename = ossplit(_url)
-        res = loop.run_until_complete(requests(_url, from_cache=True))
-        return send_file(
-            BytesIO(res),
-            mimetype='image/jpeg',
-            as_attachment=False,
-            download_name=_filename
-        )
+        if Cache.is_cached(_url):
+            loop = new_event_loop()
+            res = loop.run_until_complete(requests(_url, from_cache=True))
+            loop.close()
+            return send_file(
+                BytesIO(res),
+                mimetype='image/jpeg',
+                as_attachment=False,
+                download_name=_filename
+            )
+        else:
+            IMAGE_CACHE_QUEUE.add_nowait(_url)
+            return redirect(_url)
     
     # 對貯列進行操作
     @app.route("/api/queue-modify", methods=["POST", "GET"])
@@ -74,8 +80,14 @@ class Dashboard:
             data = request.get_json()
         else:
             data = request.values.to_dict()
+        from_cache = data.get("from_cache", True)
+        if type(from_cache) == str:
+            if from_cache == "false": from_cache = False
+            else: from_cache = True
         loop = new_event_loop()
-        return loop.run_until_complete(API.search(data))
+        res = loop.run_until_complete(API.search(data, from_cache=from_cache))
+        loop.close()
+        return res
 
     # 下載
     @app.route("/api/download", methods=["POST", "GET"])
@@ -86,6 +98,7 @@ class Dashboard:
             return "", 400
         loop = new_event_loop()
         loop.run_until_complete(API.download(data))
+        loop.close()
         return "", 200
     
     # 取得設定
@@ -128,11 +141,48 @@ class Dashboard:
     # 取得每周更新列表
     @app.route("/api/get-week-anime", methods=["POST", "GET"])
     def get_week_anime():
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.values.to_dict()
+        from_cache = data.get("from_cache", True)
+        if type(from_cache) == str:
+            if from_cache == "false": from_cache = False
+            else: from_cache = True
         loop = new_event_loop()
-        return loop.run_until_complete(API.get_week_anime())
+        res = loop.run_until_complete(API.get_week_anime(from_cache=from_cache))
+        loop.close()
+        return res
     
     # 取得動畫年表
     @app.route("/api/get-year-anime", methods=["POST", "GET"])
     def get_year_anime():
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.values.to_dict()
+        from_cache = data.get("from_cache", True)
+        if type(from_cache) == str:
+            if from_cache == "false": from_cache = False
+            else: from_cache = True
         loop = new_event_loop()
-        return loop.run_until_complete(API.get_year_anime())
+        res = loop.run_until_complete(API.get_year_anime(from_cache=from_cache))
+        loop.close()
+        return res
+    
+    # 取得完結動畫列表
+    @app.route("/api/get-finish-anime", methods=["POST", "GET"])
+    def get_finish_anime():
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.values.to_dict()
+        from_cache = data.get("from_cache", True)
+        page_index = int(data.get("page_index", 1))
+        if type(from_cache) == str:
+            if from_cache == "false": from_cache = False
+            else: from_cache = True
+        loop = new_event_loop()
+        res = loop.run_until_complete(API.get_finish_anime(from_cache=from_cache, page_index=page_index))
+        loop.close()
+        return res
