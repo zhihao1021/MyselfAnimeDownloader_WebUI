@@ -1,8 +1,9 @@
 from .m3u8 import M3U8
 
+from async_io import requests
 from modules import Thread
 
-from asyncio import gather, new_event_loop, sleep
+from asyncio import gather, new_event_loop, sleep, Queue
 from copy import deepcopy
 from time import sleep as b_sleep
 from typing import Optional
@@ -25,14 +26,18 @@ class VideoQueue:
         self._download_list = []
         # 同時下載數量
         self._thread_num = thread_num
+
+        self.__uuid = uuid1().hex[:8]
         
-        Thread(target=self._thread_job).start()
+        Thread(target=self._thread_job, name=f"VideoQueue-{self.__uuid}").start()
     
     def _thread_job(self):
         loop = new_event_loop()
         self._coro_list = []
         for _ in range(self._thread_num):
-            self._coro_list.append(loop.create_task(self._manage_job()))
+            self._coro_list.append(
+                loop.create_task(self._manage_job(), name=f"VQ-{self.__uuid} Manger")
+            )
         
         loop.run_until_complete(gather(*self._coro_list, return_exceptions=True))
     
@@ -176,3 +181,47 @@ class VideoQueue:
         self._queue_list[_index], self._queue_list[_index+1] = self._queue_list[_index+1], self._queue_list[_index]
 
         self._after_update()
+
+class ImageCacheQueue:
+    def __init__(self, connect_num: int) -> None:
+        """
+        下載排程器。
+
+        connect_num: :class:`int`
+            同時連接數量。
+        """
+        self.__uuid = uuid1().hex[:8]
+        self._connect_num = connect_num
+        self._image_queue = Queue()
+        
+        Thread(target=self._thread_job, name=f"ImageCacheQueue-{self.__uuid}").start()
+    
+    def _thread_job(self):
+        loop = new_event_loop()
+        self._coro_list = []
+        for _ in range(self._connect_num):
+            self._coro_list.append(
+                loop.create_task(self._downloader(), name=f"ICQ-{self.__uuid} Downloader")
+            )
+        
+        loop.run_until_complete(gather(*self._coro_list, return_exceptions=True))
+    
+    async def add(self, url: str):
+        await self._image_queue.put(url)
+    
+    def add_nowait(self, url: str):
+        self._image_queue.put_nowait(url)
+    
+    async def _downloader(self):
+        while True:
+            # 檢查是否有空閒中的任務
+            if self._image_queue.empty():
+                await sleep(1)
+                continue
+            # 取得新任務
+            _url = await self._image_queue.get()
+            # 開始下載
+            try:
+                await requests(_url, from_cache=True)
+            except:
+                await self._image_queue.put(_url)

@@ -41,7 +41,7 @@
     font-size: 24px;
     text-align: center;
     cursor: pointer;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
     border-style: none;
     border-width: 1px;
     border-color: rgb(var(--contrast-color), 0);
@@ -85,16 +85,16 @@
     line-height: 32px;
     font-size: 22px;
     text-align: center;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
     border-radius: 16px;
     border-style: solid;
     border-width: 1px;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     transition: 0.3s;
     cursor: pointer;
 }
 #switch-color:hover {
-    background-color: rgb(var(--primary-color));
+    background-color: rgb(var(--second-color));
     color: rgb(var(--contrast-color));
 }
 
@@ -113,8 +113,8 @@
     margin: auto 12px;
 }
 #switch-q:hover {
-    border-color: rgb(var(--primary-color));
-    background-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
+    background-color: rgb(var(--second-color));
     color: rgb(var(--contrast-color));
 }
 
@@ -123,11 +123,11 @@
     margin: auto 12px;
     width: 220px;
     height: 28px;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
     background-color: transparent;
     border-style: none;
     border-width: 1px;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     border-bottom-style: solid;
     caret-color: rgb(var(--contrast-color));
     outline: none;

@@ -62,11 +62,11 @@
     line-height: 26px;
     font-size: 18px;
     text-align: center;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
     border-radius: 13px;
     border-style: solid;
     border-width: 1px;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     transition: 0.3s;
     cursor: default;
 }
@@ -75,7 +75,7 @@
     cursor: pointer;
 }
 #home .queue .progress-bar .progress-text .progress-option.act:hover {
-    background-color: rgb(var(--primary-color));
+    background-color: rgb(var(--second-color));
 }
 #home .queue .progress-bar .progress {
     width: calc(100% - 16px);
@@ -84,7 +84,7 @@
     margin: 8px;
     margin-top: 2px;
     border-radius: 10px;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     border-width: 1px;
     border-style: solid;
     line-height: 20px;

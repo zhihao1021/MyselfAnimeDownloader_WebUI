@@ -4,10 +4,23 @@
             <p class="ms">arrow_back</p>
             <p>回上頁</p>
         </button>
+        <div class="empty"></div>
+        <button onclick="search(last_keyword, from_cache=false)">
+            <p class="ms">refresh</p>
+            <p>刷新資料</p>
+        </button>
     </div>
     <hr class="hor-hr">
     <div class="anime">
-        <img id="anime-img" src="">
+        <div class="img-block">
+            <img id="anime-img" src="">
+            <div class="loading-box">
+                <div class="ring_text font">Loading...</div>
+                <svg class="ring">
+                    <circle cx="128px" cy="128px" r="120px"></circle>
+                </svg>
+            </div>
+        </div>
         <hr class="vtl-hr">
         <div class="anime-content">
             <div class="anime-data">

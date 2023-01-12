@@ -3,8 +3,53 @@
     height: 100%;
 }
 
-#info-anime img {
+#info-anime .img-block {
     min-width: 300px;
+    position: relative;
+}
+#info-anime .img-block img {
+    width: 100%;
+}
+#info-anime .img-block .loading-box {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    transform: scale(0.8);
+}
+#info-anime .img-block .loading-box .ring_text {
+    position: absolute;
+    top: calc(50% - 21px);
+    left: calc(50% - 100px);
+    width: 200px;
+    height: 42px;
+    line-height: 42px;
+    font-size: 36px;
+    text-align: center;
+    color: rgb(255, 255, 255);
+    animation: trans 3s linear infinite;
+    font-family: "Caveat", cursive;
+}
+#info-anime .img-block .loading-box .ring {
+    width: 256px;
+    height: 256px;
+    transform: rotateZ(-90deg);
+    animation: ring_ani 3s ease infinite;
+}
+#info-anime .img-block .loading-box .ring circle {
+    fill: none;
+    stroke-width: 8px;
+    stroke: rgb(255, 255, 255);
+    stroke-linecap: round;
+    stroke-dasharray: 753;
+    stroke-dashoffset: 853;
+    animation: ring_c_ani 3s ease infinite;
 }
 
 #info-anime hr.vtl-hr {
@@ -57,6 +102,12 @@
 #info-anime .info-block .back-block button:hover {
     color: rgb(var(--contrast-color));
     border-color: rgb(var(--contrast-color));
+}
+#info-anime .info-block .back-block .empty {
+    flex: 1;
+}
+#info-anime .info-block .back-block button:last-of-type {
+    width: 128px;
 }
 
 #info-anime .info-block .anime {
@@ -124,7 +175,7 @@
     border-style: none;
     border-bottom-style: solid;
     border-width: 1px;
-    border-color: rgb(var(--primary-color));
+    border-color: rgb(var(--second-color));
     caret-color: rgb(var(--contrast-color));
     outline: none;
     font-size: 16px;
@@ -208,7 +259,7 @@
 #episodes .episode {
     width: calc(100% - 2px);
     height: 40px;
-    color: rgb(var(--primary-color));
+    color: rgb(var(--second-color));
     text-align: center;
     font-size: 24px;
     line-height: 40px;
