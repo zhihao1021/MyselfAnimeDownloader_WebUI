@@ -1,5 +1,6 @@
 let week_update_day = -1;
 let _current_update = 2;
+let finish_loaded = false;
 
 function show_update(page) {
     document.querySelector("#update-finish").style.display = "none";
@@ -9,6 +10,10 @@ function show_update(page) {
         case 0:
             document.querySelector("#update-finish").style.display = "";
             _current_update = 0;
+            if (!finish_loaded) {
+                finish_loaded = true;
+                get_finish_anime();
+            }
             break;
         case 1:
             document.querySelector("#update-year").style.display = "";
@@ -17,6 +22,9 @@ function show_update(page) {
         case 2:
             document.querySelector("#update-week").style.display = "";
             _current_update = 2;
+            if (new Date().getDay()!=week_update_day) {
+                get_week_anime()
+            }
             break;
     }
 }
@@ -24,6 +32,15 @@ function show_update(page) {
 function no_cache_reload() {
     switch (_current_update) {
         case 0:
+            document.querySelector("#update-finish .loading-box").style.display = "";
+            let finish_page = document.querySelector("#update-finish .finish-box");
+
+            if (page_index == 1) {
+                finish_page.querySelectorAll(".anime-box").forEach((ele)=>{
+                    finish_page.removeChild(ele);
+                })
+            }
+            get_finish_anime();
             break;
         case 1:
             let page = document.querySelector("#update-year");
@@ -159,13 +176,18 @@ function get_year_anime(from_cache=true) {
     })
 }
 
-function get_finish_anime(from_cache=true) {
-    $.post("/api/get-finish-anime", {"from_cache": from_cache}, (data)=>{
-        let page = document.querySelector("#update-finish");
+function get_finish_anime(from_cache=true, page_index=1) {
+    $.post("/api/get-finish-anime", {"from_cache": from_cache, "page_index": page_index}, (data)=>{
+        if (document.querySelector("#update-finish .loading-box").style.display == "none") {
+            document.querySelector("#update-finish .loading-box").style.display = "";
+        }
+        let page = document.querySelector("#update-finish .finish-box");
 
-        page.querySelectorAll(".anime-box").forEach((ele)=>{
-            page.removeChild(ele);
-        })
+        if (page_index == 1) {
+            page.querySelectorAll(".anime-box").forEach((ele)=>{
+                page.removeChild(ele);
+            })
+        }
 
         data.forEach((anime)=>{
             let anime_box = document.createElement("div");
@@ -188,5 +210,12 @@ function get_finish_anime(from_cache=true) {
             
             page.appendChild(anime_box);
         });
+        if (data.length != 0) {
+            page_index++;
+            setTimeout(get_finish_anime, 200, true, page_index);
+        }
+        else {
+            document.querySelector("#update-finish .loading-box").style.display = "none";
+        }
     })
 }

@@ -41,9 +41,16 @@
 
 from anime_module import Myself
 from asyncio import new_event_loop
+from bs4 import BeautifulSoup
+from async_io import requests
 
 async def main():
-    print(await Myself.finish_list(1,1))
+    _res = await requests("https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest", raw=True)
+    print(await _res.json())
+    # with open("debug.html", mode="wb") as _file:
+    #     _file.write(_res)
+    # _soup = BeautifulSoup(_res)
+    # print(_soup.select_one("#user-content-current_version")["content"])
 
 loop = new_event_loop()
 loop.run_until_complete(main())

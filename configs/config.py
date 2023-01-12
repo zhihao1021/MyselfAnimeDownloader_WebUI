@@ -33,7 +33,7 @@ CONFIG: dict[str, dict] = {
     "web": {
         "host": "0.0.0.0",
         "port": 5000,
-        "debug": True,
+        "debug": False,
     },
     "global": {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)",
@@ -54,21 +54,21 @@ CONFIG: dict[str, dict] = {
         "main": {
             "stream_level": "INFO",
             "file_level": "INFO",
-            "backup_count": 10,
+            "backup_count": 5,
             "file_name": "main",
             "dir_path": "logs",
         },
         "myself": {
             "stream_level": "INFO",
             "file_level": "INFO",
-            "backup_count": 10,
+            "backup_count": 5,
             "file_name": "myself",
             "dir_path": "logs",
         },
         "web": {
             "stream_level": "WARNING",
             "file_level": "INFO",
-            "backup_count": 10,
+            "backup_count": 5,
             "file_name": "web",
             "dir_path": "logs",
         },

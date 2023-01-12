@@ -145,10 +145,10 @@ class API:
         return _result
     
     @staticmethod
-    async def get_finish_anime(from_cache=True):
+    async def get_finish_anime(from_cache=True, page_index=1):
         def map_animetable(animetable: MyselfAnimeTable):
             return animetable.__dict__
-        _finish_list = await Myself.finish_list(from_cache=from_cache)
+        _finish_list = await Myself.finish_list(from_cache=from_cache, start_page=page_index, page_num=1)
 
         _result = list(map(map_animetable, _finish_list))
         
