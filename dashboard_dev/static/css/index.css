@@ -1,0 +1,93 @@
+@import url(../fonts/font.css);
+@import url("../fonts/material-symbols.css");
+
+:root {
+    --background-color: 33, 33, 33;
+    --secondground-color: 50, 50, 50;
+    --contrast-color: 255, 255, 255;
+    --sec-contrast-color: 255, 130, 0;
+    --second-color: 90, 90, 90;
+    font-family: "Noto Sans TC", sans-serif;
+}
+
+.eng {
+    font-family: 'Open Sans', sans-serif;
+}
+
+* {
+    transition: background-color 0.5s, color 0.5s, border-color 0.5s;
+}
+
+html {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body {
+    background-color: rgb(var(--background-color));
+    margin: 8px;
+    margin-top: 80px;
+    height: calc(100% - 88px);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--background-color));
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--secondground-color));
+}
+
+/* 以下無義 */
+
+.b {
+    background-image: linear-gradient(var(--b));
+    background-size: 100% 200%;
+    background-repeat: repeat-y;
+    animation-name: b;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes b {
+    0% {
+        background-position-y: 0%;
+    }
+    50% {
+        background-position-y: 100%;
+    }
+    100% {
+        background-position-y: 200%;
+    }
+}
+
+.b_2 {
+    background-image: linear-gradient(90deg, var(--b));
+    background-size: 200% 100%;
+    background-repeat: repeat-x;
+    animation-name: b_2;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-direction: reverse;
+}
+
+@keyframes b_2 {
+    0% {
+        background-position-x: 0%;
+    }
+    50% {
+        background-position-x: 100%;
+    }
+    100% {
+        background-position-x: 200%;
+    }
+}

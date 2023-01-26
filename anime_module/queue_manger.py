@@ -1,7 +1,7 @@
 from .m3u8 import M3U8
 
-from async_io import requests
-from modules import Thread
+from aiorequests import requests_
+from utils import Thread
 
 from asyncio import gather, new_event_loop, sleep, Queue
 from copy import deepcopy
@@ -222,6 +222,6 @@ class ImageCacheQueue:
             _url = await self._image_queue.get()
             # 開始下載
             try:
-                await requests(_url, from_cache=True)
+                await requests_(_url, from_cache=True)
             except:
                 await self._image_queue.put(_url)
