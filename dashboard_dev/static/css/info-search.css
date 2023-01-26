@@ -1,0 +1,31 @@
+#info-search {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: rgb(var(--contrast-color));
+}
+
+#info-search .ms {
+    font-size: 36px;
+    margin: 4px;
+}
+
+#info-search input {
+    width: 35%;
+    height: 36px;
+    color: rgb(var(--second-color));
+    background-color: transparent;
+    border-style: none;
+    border-width: 1px;
+    border-bottom-style: solid;
+    border-color: rgb(var(--second-color));
+    caret-color: rgb(var(--contrast-color));
+    outline: none;
+    font-size: 24px;
+    transition: 0.3s;
+}
+#info-search input:focus {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}

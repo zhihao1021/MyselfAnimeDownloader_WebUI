@@ -1,11 +1,11 @@
 from .config import *
 
-from logging import StreamHandler, getLevelName, Formatter, LogRecord, getLogger, NOTSET
-from os import fspath, listdir, remove, rename, makedirs
-from os.path import abspath, split, splitext, exists, isdir, join
-from datetime import datetime, timedelta, time
+from logging import Formatter, getLevelName, getLogger, LogRecord, NOTSET, StreamHandler
+from os import fspath, listdir, makedirs, remove, rename
+from os.path import abspath, exists, isdir, isfile, join, split, splitext
+from datetime import datetime, time, timedelta
 from io import TextIOWrapper
-from traceback import format_exception, format_stack
+from traceback import format_exception
 
 class C_Formatter(Formatter):
     def format(self, record: LogRecord) -> str:
@@ -20,6 +20,7 @@ class C_Formatter(Formatter):
             s += record.exc_text
         if record.stack_info:
             if not s.endswith("\n"): s += "\n"
+            # from traceback import format_stack
             # s += format_stack(record.stack_info)
             s += record.stack_info
         return s
@@ -112,20 +113,18 @@ class C_StreamHandler(StreamHandler):
         super().__init__(*args, **kwargs)
         self.setFormatter(C_Formatter())
 
-for name in LOGGING_CONFIG.keys():
-    _config = LOGGING_CONFIG[name]
-    if not isdir(_config.DIR_PATH):
-        makedirs(_config.DIR_PATH)
-    _file_name = join(_config.DIR_PATH, f"{_config.FILE_NAME}.log")
-    _logger = getLogger(name)
-    _logger.setLevel(10)
-    _stream_handler = C_StreamHandler()
-    _stream_handler.setLevel(_config.STREAM_LEVEL)
-    _logger.addHandler(_stream_handler)
-    _file_handler = C_FileHandler(_file_name, _config.BACKUP_COUNT)
-    _file_handler.setLevel(_config.FILE_LEVEL)
-    _logger.addHandler(_file_handler)
-
-MAIN_LOGGER = getLogger("main")
-MYSELF_LOGGER = getLogger("myself")
-WEB_LOGGER = getLogger("web")
+def logger_init():
+    for name in LOGGING_CONFIG.keys():
+        config = LOGGING_CONFIG[name]
+        if not isdir(config.dir_path):
+            makedirs(config.dir_path)
+        file_name = join(config.dir_path, f"{config.file_name}.log")
+        logger = getLogger(name)
+        logger.setLevel(10)
+        stream_handler = C_StreamHandler()
+        stream_handler.setLevel(config.stream_level)
+        logger.addHandler(stream_handler)
+        file_handler = C_FileHandler(file_name, config.backup_count)
+        file_handler.setLevel(config.file_level)
+        logger.addHandler(file_handler)
+    getLogger("main").info("Logging Init.")

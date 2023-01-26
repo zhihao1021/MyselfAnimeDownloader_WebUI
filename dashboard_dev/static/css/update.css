@@ -1,0 +1,58 @@
+@import url(update-finish.css);
+@import url(update-year.css);
+@import url(update-week.css);
+
+#update {
+    height: 100%;
+    width: 100%;
+}
+
+#update .update-switch {
+    height: 32px;
+    display: flex;
+    user-select: none;
+}
+#update .update-switch button {
+    background-color: transparent;
+    width: 128px;
+    height: 30px;
+    font-size: 18px;
+    line-height: 26px;
+    color: rgb(var(--secondground-color));
+    border-color: rgb(var(--secondground-color));
+    border-width: 1px;
+    border-radius: 0px;
+    border-style: solid;
+    margin: 0px;
+    transition: color 0.3s, border-color 0.3s;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#update .update-switch button p {
+    transition: 0s;
+    margin: 0px auto;
+}
+#update .update-switch button:hover {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}
+#update .update-switch button:first-of-type {
+    border-radius: 6px 0px 0px 6px;
+}
+#update .update-switch button:nth-last-of-type(2) {
+    border-radius: 0px 6px 6px 0px;
+}
+#update .update-switch button:last-of-type {
+    border-radius: 6px;
+}
+
+#update .update-switch .empty {
+    flex: 1;
+}
+
+#update .update-page {
+    height: calc(100% - 32px);
+    width: 100%;
+}
