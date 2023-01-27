@@ -145,6 +145,12 @@ class VideoQueue:
         """
         return deepcopy(self.__queue_list)
     
+    def get_data(self) -> dict[str, M3U8]:
+        """
+        取得所有資料。
+        """
+        return self.__downloader_dict
+    
     def get_downloader(self, downloader_id: str) -> Optional[M3U8]:
         """
         取得下載器。
@@ -152,6 +158,12 @@ class VideoQueue:
         :param downloader_id: :class:`str`下載器ID。
         """
         return self.__downloader_dict.get(downloader_id)
+    
+    def get_index(self, downloader_id: str) -> int:
+        try:
+            return self.__queue_list.index(downloader_id)
+        except ValueError:
+            return -1
     
     def upper(self, downloader_id: str):
         """

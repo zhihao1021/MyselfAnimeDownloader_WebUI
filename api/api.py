@@ -1,156 +1,116 @@
-from anime_module import gen_dir_name, gen_file_name, M3U8, Myself, MyselfAnime, MyselfAnimeTable
-from configs import *
+from anime_module import M3U8, Myself, MyselfAnime, MyselfAnimeTable
+from configs import MYSELF_URL
 from swap import VIDEO_QUEUE
 
 from asyncio import gather, create_task
-
+from typing import Literal
 class API:
     @staticmethod
-    def queue_modify(data: dict):
-        _downloader_id = data.get("id")
-        _modify = data.get("modify")
+    def queue_modify(modify: Literal["pause", "resume", "stop", "upper", "lower", "highest", "lowest"], downloader_id: str):
         # 檢查是否為有效ID
-        if _downloader_id not in VIDEO_QUEUE.get_queue(): return None
-        _downloader = VIDEO_QUEUE.get_downloader(_downloader_id)
+        if downloader_id not in VIDEO_QUEUE.get_queue():
+            return None
+        downloader = VIDEO_QUEUE.get_downloader(downloader_id)
 
         # 辨認功能
-        if _modify == "pause":
-            _downloader.pause()
-        elif _modify == "resume":
-            _downloader.resume()
-        elif _modify == "stop":
-            VIDEO_QUEUE.remove(_downloader_id)
-        elif _modify == "upper":
-            VIDEO_QUEUE.upper(_downloader_id)
-        elif _modify == "lower":
-            VIDEO_QUEUE.lower(_downloader_id)
-        elif _modify == "highest":
-            _download_list = VIDEO_QUEUE.get_queue()
-            _download_list.remove(_downloader_id)
-            _download_list.insert(0, _downloader_id)
-            VIDEO_QUEUE.update(_download_list)
-        elif _modify == "lowest":
-            _download_list = VIDEO_QUEUE.get_queue()
-            _download_list.remove(_downloader_id)
-            _download_list.append(_downloader_id)
-            VIDEO_QUEUE.update(_download_list)
+        if modify == "pause":
+            downloader.pause()
+        elif modify == "resume":
+            downloader.resume()
+        elif modify == "stop":
+            VIDEO_QUEUE.remove(downloader_id)
+        elif modify == "upper":
+            VIDEO_QUEUE.upper(downloader_id)
+        elif modify == "lower":
+            VIDEO_QUEUE.lower(downloader_id)
+        elif modify == "highest":
+            download_list = VIDEO_QUEUE.get_queue()
+            download_list.remove(downloader_id)
+            download_list.insert(0, downloader_id)
+            VIDEO_QUEUE.update(download_list)
+        elif modify == "lowest":
+            download_list = VIDEO_QUEUE.get_queue()
+            download_list.remove(downloader_id)
+            download_list.append(downloader_id)
+            VIDEO_QUEUE.update(download_list)
         return None
 
     @staticmethod
     def download_queue():
-        _queue_list = VIDEO_QUEUE.get_queue()
-        _queue_dict = VIDEO_QUEUE._downloader_dict
-        _result = {}
-        for _downloader_id, _downloader in _queue_dict.items():
-            _downloader = VIDEO_QUEUE.get_downloader(_downloader_id)
-            try: _index = _queue_list.index(_downloader_id)
-            except ValueError: _index = -1
-            _result[_downloader_id] = {
-                "name": f"{_downloader.output_name} - {_downloader.status()}",
-                "progress": _downloader.get_progress(),
-                "status": _downloader.status_code(),
-                "order": _index,
+        def gen_data(downloader_id: str):
+            downloader = VIDEO_QUEUE.get_downloader(downloader_id)
+            return {
+                "name": f"{downloader.output_name} - {downloader.status()}",
+                "progress": downloader.get_progress(),
+                "status": downloader.status_code(),
+                "order": VIDEO_QUEUE.get_index(downloader_id),
             }
-        return _result
+        result = {
+            downloader_id: gen_data(downloader_id, downloader)
+            for downloader_id, downloader in VIDEO_QUEUE.get_data().items()
+        }
+        return result
     
     @staticmethod
-    async def search(data: dict, from_cache=True):
-        def map_animetable(animetable: MyselfAnimeTable):
-            _result = animetable.__dict__
-            if animetable.updated:
-                for _index, _anime in enumerate(_result["VIDEO_LIST"]):
-                    _result["VIDEO_LIST"][_index] = _anime.__dict__
-            return _result
-        try:
-            _keyword = data.get("keyword").strip()
-        except:
-            return {"type": "error"}
-
-        if MYSELF_URL in _keyword:
+    async def search(keyword: str, from_cache=True):
+        if MYSELF_URL in keyword:
             # 如果搜尋連結
-            _anime_table = MyselfAnimeTable(_keyword)
+            anime_table = MyselfAnimeTable(keyword)
             try:
-                await _anime_table.update(from_cache=from_cache)
-                _anime_dict = map_animetable(_anime_table)
+                await anime_table.update(from_cache=from_cache)
                 return {
                     "type": "anime",
-                    "data": _anime_dict
+                    "data": anime_table.dict()
                 }
-            except: pass
-        _search_result = await Myself.search(_keyword, from_cache=from_cache)
-        if len(_search_result) == 1:
-            _anime_table = _search_result[0]
-            await _anime_table.update(from_cache=from_cache)
-            _anime_dict = map_animetable(_anime_table)
+            except:
+                pass
+        search_result = await Myself.search(keyword, from_cache=from_cache)
+        if len(search_result) == 1:
+            anime_table = search_result[0]
+            await anime_table.update()
             return {
                 "type": "anime",
-                "data": _anime_dict
+                "data": anime_table.dict()
             }
-        _search_result = list(map(map_animetable, _search_result))
         return {
             "type": "search",
-            "data": _search_result
+            "data": list(map(lambda anime_table: anime_table.dict(), search_result))
         }
     
     @staticmethod
-    async def download(data: dict):
-        _ani_name = data["ani_name"]
-        _episodes = data["episodes"]
-        _tasks = []
+    async def download(episodes: list[MyselfAnime]):
+        tasks = [
+            create_task(anime.gen_downloader())
+            for anime in episodes
+        ]
 
-        for _episode_data in _episodes:
-            
-            _tasks.append(create_task(MyselfAnime(
-                _ani_name,
-                _episode_data["tid"],
-                _episode_data["vid"]
-            ).get_m3u8_url()))
-
-        _m3u8s = await gather(*_tasks)
-        for _m3u8_info, _episode in zip(_m3u8s, _episodes):
-            _eps_name = gen_file_name(_ani_name, _episode["eps_name"])
-            _downloader = M3U8(
-                *_m3u8_info,
-                _eps_name,
-                gen_dir_name(_ani_name)
-            )
-            VIDEO_QUEUE.add(_downloader)
-        return ""
+        downloaders = await gather(*tasks)
+        for downloader in downloaders:
+            VIDEO_QUEUE.add(downloader)
+        return None
 
     @staticmethod
-    async def get_week_anime(from_cache=True):
-        def map_animetable(animetable_tuple: tuple[MyselfAnimeTable, str]):
-            animetable, update_text = animetable_tuple
-            return (animetable.__dict__, update_text)
-
-        _week_list = await Myself.weekly_update(from_cache=from_cache)
-
-        _result = list(map(
-            lambda _day_data: list(map(map_animetable, _day_data)),
-            _week_list
+    async def get_week_anime(from_cache: bool=True):
+        week_list = await Myself.weekly_update(from_cache=from_cache)
+        result = list(map(
+            lambda day_data: list(map(lambda day_data: day_data[0].dict(), day_data)),
+            week_list
         ))
-        
-        return _result
+        return result
 
     @staticmethod
-    async def get_year_anime(from_cache=True):
-        def map_animetable(animetable: MyselfAnimeTable):
-            return animetable.__dict__
-        _year_dict = await Myself.year_list(from_cache=from_cache)
-
-        _result = {}
-        for _key, _value in _year_dict.items():
-            _result[_key] = list(map(map_animetable, _value))
-        
-        return _result
+    async def get_year_anime(from_cache: bool=True):
+        year_dict = await Myself.year_list(from_cache=from_cache)
+        result = {
+            key: list(map(lambda anime_table: anime_table.dict(), value))
+            for key, value in year_dict.items()
+        }
+        return result
     
     @staticmethod
-    async def get_finish_anime(from_cache=True, page_index=1):
-        def map_animetable(animetable: MyselfAnimeTable):
-            return animetable.__dict__
-        _finish_list = await Myself.finish_list(from_cache=from_cache, start_page=page_index, page_num=1)
-
-        _result = list(map(map_animetable, _finish_list))
+    async def get_finish_anime(page_index: int=1, from_cache: bool=True):
+        finish_list = await Myself.finish_list(from_cache=from_cache, start_page=page_index, page_num=1)
+        result = list(map(lambda anime_table: anime_table.dict, finish_list))
         
-        return _result
+        return result
     

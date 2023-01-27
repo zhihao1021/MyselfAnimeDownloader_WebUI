@@ -4,9 +4,10 @@ from unittest import TestCase, IsolatedAsyncioTestCase
 
 class MyselfTestCase(TestCase):
     def test_MyselfAnime(self):
-        result = MyselfAnime(**{"episode-name": "第 01 話", "tid": "46195", "vid": "001"})
+        result = MyselfAnime(**{"animate-name": "HELLO WORLD【全 1 集】", "episode-name": "第 01 話", "tid": "46195", "vid": "001"})
 
         expected = {
+            "ANI_NAME": "HELLO WORLD【全 1 集】",
             "EPS_NAME": "第 01 話",
             "TID": "46195",
             "VID": "001",
@@ -35,7 +36,7 @@ class MyselfTestCase(TestCase):
 
 class MyselfTestCase_Async(IsolatedAsyncioTestCase):
     async def test_MyselfAnime_get_m3u8_url(self):
-        result = await MyselfAnime(**{"episode-name": "第 01 話", "tid": "46195", "vid": "001"}).get_m3u8_url()
+        result = await MyselfAnime(**{"animate-name": "HELLO WORLD【全 1 集】", "episode-name": "第 01 話", "tid": "46195", "vid": "001"}).get_m3u8_url()
         m3u8_server, m3u8_file = result
 
         self.assertEqual(type(result), tuple)
@@ -60,6 +61,7 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
             "IMAGE_URL": "https://myself-bbs.com/data/attachment/forum/202010/11/1314529sq2sy7gzmqqd7m2.jpg",
             "VIDEO_LIST": [
                 {
+                    "ANI_NAME": "HELLO WORLD【全 1 集】",
                     "EPS_NAME": "第 01 話",
                     "TID": "46195",
                     "VID": "001"

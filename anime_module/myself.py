@@ -1,11 +1,13 @@
+from .m3u8 import M3U8
+
 from aiorequests import new_session, Cache, requests
-from configs import GLOBAL_CONFIG, MYSELF_URL
+from configs import GLOBAL_CONFIG, MYSELF_CONFIG, MYSELF_URL
 from utils import Json, retouch_name
 
 from asyncio import create_task, gather, sleep as asleep, Task
 from datetime import timedelta
 from logging import getLogger
-from os.path import split as split
+from os.path import join, split as split
 from traceback import format_exception
 from typing import Any, Optional, Union
 from unicodedata import normalize
@@ -33,17 +35,18 @@ class MyselfAnime(ValidAssignmentModel):
     :param tid: :class:`str`動畫ID。
     :param vid: :class:`str`影片ID。
     """
-    EPS_NAME: str=Field("", alias="episode-name") # 集數名稱
+    ANI_NAME: str=Field(alias="animate-name") # 名稱
+    EPS_NAME: str=Field(alias="episode-name") # 集數名稱
     TID: str=Field(alias="tid")                   # 動畫ID
     VID: str=Field(alias="vid")                   # 影片ID
+    
+    @validator("ANI_NAME", "EPS_NAME")
+    def eps_name_validator(cls, value: str):
+        return normalize(UNICODE_CODE, value)
     
     @validator("*")
     def all_validator(cls, value: str):
         return value.strip(STRIP)
-    
-    @validator("EPS_NAME")
-    def eps_name_validator(cls, value: str):
-        return normalize(UNICODE_CODE, value).strip(STRIP)
     
     async def get_m3u8_url(
         self,
@@ -76,6 +79,24 @@ class MyselfAnime(ValidAssignmentModel):
 
         if need_close: await ws.close()
         return m3u8_server, m3u8_file
+    
+    async def gen_downloader(self) -> M3U8:
+        """
+        取得M3U8下載器。
+        """
+        translate = lambda string: string.replace("$NAME", self.ANI_NAME).replace("$EPS", self.EPS_NAME)
+        m3u8_host, m3u8_file = await self.get_m3u8_url()
+        output_name = translate(MYSELF_CONFIG.file_name)
+        output_dir = MYSELF_CONFIG.download_path
+        if MYSELF_CONFIG.classify:
+            output_dir = join(output_dir, translate(MYSELF_CONFIG.dir_name))
+        return M3U8(
+            host=m3u8_host,
+            m3u8_file=m3u8_file,
+            output_name=output_name,
+            output_dir=output_dir
+        )
+
 
 class MyselfAnimeTable(ValidAssignmentModel):
     """
@@ -164,6 +185,7 @@ class MyselfAnimeTable(ValidAssignmentModel):
         # 動畫列表
         self.VIDEO_LIST = [
             MyselfAnime(**{
+                "animate-name": self.NAME,
                 "episode-name": episode_name,
                 "tid": self.TID,
                 "vid": split(a_tag["data-href"])[1]
