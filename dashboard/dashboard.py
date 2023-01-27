@@ -1,4 +1,4 @@
-from aiorequests import Cache, requests_
+from aiorequests import Cache, requests
 from api import API
 from configs import *
 from utils import Json
@@ -45,7 +45,7 @@ class Dashboard:
         _, _filename = ossplit(_url)
         if Cache.is_cached(_url):
             loop = new_event_loop()
-            res = loop.run_until_complete(requests_(_url, from_cache=True))
+            res = loop.run_until_complete(requests(_url, from_cache=True))
             loop.close()
             return send_file(
                 BytesIO(res),

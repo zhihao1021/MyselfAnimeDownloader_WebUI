@@ -1,6 +1,6 @@
 VERSION = "Release 1.0"
 
-from aiorequests import requests_
+from aiorequests import requests
 from configs import *
 from dashboard import Dashboard
 from utils import Thread
@@ -14,14 +14,14 @@ from psutil import net_if_addrs
 async def check_update() -> None:
     MAIN_LOGGER.info("開始檢查更新...")
     try:
-        _res = await requests_("https://api.github.com/repos/AloneAlongLife/MyselfAnimeDownloader_WebUI/releases/latest", raw=True)
+        _res = await requests("https://api.github.com/repos/AloneAlongLife/MyselfAnimeDownloader_WebUI/releases/latest", raw=True)
         _data: dict = await _res.json()
         _latest_version = _data.get("tag_name", VERSION).replace("_", " ")
 
         if _latest_version == VERSION:
             MAIN_LOGGER.info("當前版本為最新版。")
             return
-        _update_content = await requests_("https://raw.githubusercontent.com/AloneAlongLife/MyselfAnimeDownloader_WebUI/master/LatestUpdate.md")
+        _update_content = await requests("https://raw.githubusercontent.com/AloneAlongLife/MyselfAnimeDownloader_WebUI/master/LatestUpdate.md")
         MAIN_LOGGER.warning(f"檢查到更新版本: {_latest_version}")
         MAIN_LOGGER.warning(f"檢查到更新內容:\n{_update_content.decode()}")
         MAIN_LOGGER.warning("更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")

@@ -1,7 +1,9 @@
-BAN_TABLE = str.maketrans("\\/:*?\"<>|", " "*10)
-BAN_TABLE.update({i: chr(i) for i in range(32)})
+from typing import Union
 
-def retouch_name(name: str) -> str:
+BAN_CHAR = b"\\/:*?\"<>|" + bytes(range(32))
+BAN_TABLE = {i: " " for i in BAN_CHAR}
+
+def retouch_name(name: Union[str, bytes]) -> Union[str, bytes]:
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
     name: :class:`str`
@@ -10,4 +12,6 @@ def retouch_name(name: str) -> str:
     return: :class:`str`
         修飾後字串。
     """
-    return name.translate(BAN_TABLE).strip()
+    if type(name) == str:
+        return name.translate(BAN_TABLE).strip()
+    return name.decode().translate(BAN_TABLE).strip().encode()

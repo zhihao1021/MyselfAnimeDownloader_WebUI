@@ -1,13 +1,13 @@
 from configs import TIMEZONE
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import makedirs
 from os.path import getmtime, isfile, isdir, join, split as ossplit
-from typing import Optional, Union
+from typing import Union
 from urllib.parse import urlsplit
 from utils import retouch_name
 
-from aiofiles import open as a_open
+from aiofiles import open as aopen
 
 def url2cache_path(url: str) -> tuple[str, str]:
     """
@@ -37,7 +37,7 @@ class Cache:
         從快取中讀取資源。
         """
         _, cache_path = url2cache_path(url)
-        async with a_open(cache_path, mode="rb") as open_file:
+        async with aopen(cache_path, mode="rb") as open_file:
             return await open_file.read()
     
     @staticmethod
@@ -59,7 +59,7 @@ class Cache:
             makedirs(cache_dir)
 
         # 寫入資料
-        async with a_open(cache_path, mode="wb") as open_file:
+        async with aopen(cache_path, mode="wb") as open_file:
             return await open_file.write(content)
     
     @staticmethod
@@ -76,8 +76,12 @@ class Cache:
             return open_file.write(content)
     
     @staticmethod
-    def get_update_time(url: str) -> Optional[datetime]:
+    def get_update_time(url: str) -> datetime:
         _, cache_path = url2cache_path(url)
         if isfile(cache_path):
             return datetime.fromtimestamp(getmtime(cache_path), tz=TIMEZONE)
-        return None
+        return datetime.fromtimestamp(0, tz=TIMEZONE)
+    
+    @staticmethod
+    def get_update_delta(url: str) -> timedelta:
+        return datetime.now(tz=TIMEZONE) - Cache.get_update_time(url)
