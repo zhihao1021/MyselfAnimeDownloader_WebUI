@@ -37,6 +37,7 @@ async def requests(
     cookies: Optional[dict[str, str]]=None,
     raw: bool=False,
     soup: bool=False,
+    json: bool=False,
     from_cache: bool=False,
     save_cache: bool=False,
     cache_delta: Optional[timedelta]=None,
@@ -54,6 +55,7 @@ async def requests(
     :param cookies: :class:`dict`請求Cookies。
     :param raw: :class:`bool`是否返回原始回應(:class:`ClientResponse`)。
     :param soup: :class:`bool`是否返回BeautifulSoup。
+    :param json: :class:`bool`是否返回Json解碼後的資料。
     :param from_cache: :class:`bool`是否從快取讀取。
     :param save_cache: :class:`bool`是否將資料儲存至快取。
     :param cache_delta: :class:`bool`快取有效時間。
@@ -79,6 +81,8 @@ async def requests(
                         await Cache.read_cache(url),
                         features=BS_FEATURE
                     )
+                elif json:
+                    return Json.loads(await Cache.read_cache(url))
                 return await Cache.read_cache(url)
         # 檢查快取是否超時
         elif Cache.get_update_delta(url) < cache_delta:
@@ -87,6 +91,8 @@ async def requests(
                     await Cache.read_cache(url),
                     features=BS_FEATURE
                 )
+            elif json:
+                return Json.loads(await Cache.read_cache(url))
             return await Cache.read_cache(url)
         
         # 檢查是否需要開新連線
@@ -132,6 +138,8 @@ async def requests(
                 await res.content.read(),
                 features=BS_FEATURE
             )
+        elif json:
+            result = await res.json()
         else:
             result = await res.content.read()
             if save_cache:
