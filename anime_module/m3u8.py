@@ -1,7 +1,7 @@
 from aiorequests import new_session, requests
-from configs import GLOBAL_CONFIG, FFMPEG_ARGS
+from configs import FFMPEG_ARGS, GLOBAL_CONFIG, TIMEZONE
 
-from asyncio import CancelledError, create_task, current_task, gather, get_running_loop, Lock, Queue, sleep, Task
+from asyncio import CancelledError, create_task, current_task, gather, get_running_loop, Queue, sleep, Task
 from datetime import datetime
 from logging import getLogger
 from os import makedirs, rename, rmdir, stat, walk
@@ -10,9 +10,9 @@ from shutil import rmtree
 from subprocess import run, DEVNULL, PIPE
 from traceback import format_exception
 from typing import Optional
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
-from aiofiles import open as a_open
+from aiofiles import open as aopen
 from aiohttp import ClientSession
 
 def recursion_delete_dir(dir_path: str):
@@ -37,14 +37,10 @@ class M3U8:
         """
         M3U8下載器。
 
-        host: :class:`str`
-            主機位置。
-        m3u8_file: :class:`str`
-            .m3u8文件位置。
-        output_name: :class:`str`
-            輸出檔案名稱。
-        output_dir: :class:`str`
-            輸出資料夾位置。
+        :param host: :class:`str`主機位置。
+        :param m3u8_file: :class:`str`.m3u8文件位置。
+        :param output_name: :class:`str`輸出檔案名稱。
+        :param output_dir: :class:`str`輸出資料夾位置。
         """
         # 主機位置
         self.host = host if host.endswith("/") else (host + "/")
@@ -67,7 +63,6 @@ class M3U8:
         self.__block_num = 0       # 區塊數
         self.__block_progress = [] # 區塊進度
         self.__exception = None    # 發生的錯誤
-        self.__lock = Lock()       # 協程鎖，暫停下載用
 
         # 協程列表
         self.tasks: list[Task] = []
@@ -102,7 +97,7 @@ class M3U8:
         # 解析m3u8檔案
         ts_urls = Queue()
         total_file_list = []
-        async with a_open(join(self.temp_dir, "comp_in"), mode="w") as comp_file:
+        async with aopen(join(self.temp_dir, "comp_in"), mode="w") as comp_file:
             for line in m3u8_file_content.split("\n"):
                 # 範例: 720p_000.ts
                 if not line.endswith(".ts"):
@@ -116,12 +111,9 @@ class M3U8:
                 self.__block_num += 1
         
         while True:
-            if self.__lock.locked():
-                self.__lock.release()
             # 新增下載協程
             for _ in range(GLOBAL_CONFIG.connections):
                 self.tasks.append(create_task(self.__download(ts_urls, client)))
-            self.tasks.append(create_task(self.__lock_task()))
             self.tasks.append(create_task(self.__block_check()))
             # 開始下載
             res = await gather(*self.tasks, return_exceptions=True)
@@ -132,7 +124,7 @@ class M3U8:
                 for _file in total_file_list:
                     await ts_urls.put(_file)
                 continue
-            elif False in map(self._check_file_finish, total_file_list) and self.get_progress() == 1:
+            elif False in map(self.__check_file_finish, total_file_list) and self.get_progress() == 1:
                 self.__logger.info(f"M3U8: 檢測到文件缺失，開始重新下載`{self.output_name}`。")
                 self.tasks = []
                 for file in total_file_list:
@@ -181,6 +173,13 @@ class M3U8:
             ),
         )
         if subprocessres.stderr != b"":
+            if not isdir("ffmpeg-error"):
+                makedirs("ffmpeg-error")
+            async with aopen(
+                f"ffmpeg-error/{datetime.now(tz=TIMEZONE).isoformat().replace(':', '_')}.log",
+                mode="wb",
+            ) as open_file:
+                await open_file.write(subprocessres.stderr)
             self.__logger.error(f"M3U8: FFmpeg Error: {subprocessres.stderr.decode()}")
         else:
             self.__clean_up()
@@ -223,16 +222,16 @@ class M3U8:
                     # 取得影片大小
                     total_leng = int(stream.headers.get("content-length"))
                     # 開啟檔案
-                    async with a_open(file_path, mode="ab") as video:
+                    async with aopen(file_path, mode="ab") as video:
                         async for chunk in stream.content.iter_chunked(1024):
-                            await self.__lock.acquire()
+                            while self.pause_:
+                                await sleep(0.1)
                             # 寫入檔案
                             write_leng = await video.write(chunk)
                             # 更新已下載大小
                             downloaded_size += write_leng
                             # 更新下載進度
                             self.__block_progress[block_index] = downloaded_size / total_leng
-                            self.__lock.release()
                     rename(file_path, finish_file_path)
                     # 完成
                     self.__block_progress[block_index] = 1
@@ -255,16 +254,6 @@ class M3U8:
                     self.__logger.warning(f"M3U8下載發生錯誤，將於 5 秒後重新下載，第 {exception_times} 次重試，連結:`{url}`。")
                     await sleep(5)
                     continue
-    
-    async def __lock_task(self):
-        alive = True
-        while alive:
-            if self.pause_:
-                await self.__lock.acquire()
-                while self.pause_: await sleep(0.1)
-                self.__lock.release()
-            await sleep(0.2)
-            alive = self.get_progress() < 1
     
     async def __block_check(self):
         alive = True
@@ -293,6 +282,8 @@ class M3U8:
     def get_progress(self) -> float:
         """
         取得下載進度: 0~1(以區塊數量計算，非真實數值)。
+
+        :return: :class:`float`0~1。
         """
         block_progress = self.__block_progress.copy()
         total_progress = sum(block_progress)
@@ -312,11 +303,12 @@ class M3U8:
         """
         停止下載。
 
-        clean: :class:`bool`
-            停止後是否清除暫存。
+        :param clean: :class:`bool`停止後是否清除暫存。
         """
-        if clean: self.stop_ = True
-        else: self.stop_ = None
+        if clean:
+            self.stop_ = True
+        else:
+            self.stop_ = None
         for task in self.tasks:
             task.cancel("")
         if clean:
@@ -326,15 +318,15 @@ class M3U8:
     def status_code(self) -> int:
         """
         回傳當前狀態碼。
+        0: 下載中
+        1: 暫停中
+        2: 中斷
+        3: 完成
+        4: 尚未開始
+        5: 中止
+        6: 發生錯誤
 
-        return: :class:`int`
-            0: 下載中
-            1: 暫停中
-            2: 中斷
-            3: 完成
-            4: 尚未開始
-            5: 中止
-            6: 發生錯誤
+        :param return: :class:`int`0~6。
         """
         if self.started:
             if self.pause_: return 1
@@ -351,8 +343,7 @@ class M3U8:
         """
         回傳當前狀態。
 
-        return: :class:`str`
-            下載中|暫停中|中斷|中止|發生錯誤
+        :param return: :class:`str`下載中|暫停中|中斷|中止|發生錯誤。
         """
         code = self.status_code()
         return ["下載中", "暫停中", "中斷", "完成", "尚未開始", "中止", "發生錯誤"][code]

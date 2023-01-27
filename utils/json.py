@@ -3,6 +3,14 @@ from typing import Any, Optional, Union
 from aiofiles import open as aopen
 
 import orjson
+from pydantic import BaseModel
+
+def decode_data(by_alias: bool=True, **kwargs):
+    def __decode_data(value: Union[BaseModel, Any]):
+        if issubclass(type(value), BaseModel):
+            return value.dict(by_alias=by_alias, **kwargs)
+        return value
+    return __decode_data
 
 class Json:
     """
@@ -11,15 +19,22 @@ class Json:
     @staticmethod
     def dumps(
         data: Any,
-        option: Optional[int]=None
+        option: Optional[int]=None,
+        by_alias: bool=True,
+        **kwargs,
     ) -> str:
         """
         將`data`轉換為字串。
         
         :param data: 輸入資料。
         :param option: orjson選項。
+        :param by_alias: pydantic選項。
         """
-        return orjson.dumps(data, option=option).decode('utf-8')
+        return orjson.dumps(
+            data,
+            default=decode_data(by_alias=by_alias, **kwargs),
+            option=option
+        ).decode('utf-8')
 
     @staticmethod
     def loads(data: Union[bytes, bytearray, memoryview, str]) -> Any:
@@ -34,7 +49,9 @@ class Json:
     async def dump(
         file: str,
         data: Any,
-        option: Optional[int]=orjson.OPT_INDENT_2
+        option: Optional[int]=orjson.OPT_INDENT_2,
+        by_alias: bool=True,
+        **kwargs
     ) -> None:
         """
         將`data`儲存於`file`中。
@@ -44,13 +61,19 @@ class Json:
         :param option: orjson選項。
         """
         async with aopen(file, mode="wb") as open_file:
-            await open_file.write(orjson.dumps(data, option=option))
+            await open_file.write(orjson.dumps(
+                data,
+                default=decode_data(by_alias=by_alias, **kwargs),
+                option=option
+            ))
     
     @staticmethod
     def dump_nowait(
         file: str,
         data: Any,
-        option: Optional[int]=orjson.OPT_INDENT_2
+        option: Optional[int]=orjson.OPT_INDENT_2,
+        by_alias: bool=True,
+        **kwargs,
     ) -> None:
         """
         將`data`儲存於`file`中。
@@ -60,7 +83,11 @@ class Json:
         :param option: orjson選項。
         """
         with open(file, mode="wb") as open_file:
-            open_file.write(orjson.dumps(data, option=option))
+            open_file.write(orjson.dumps(
+                data,
+                default=decode_data(by_alias=by_alias, **kwargs),
+                option=option
+            ))
 
     @staticmethod
     async def load(file: str) -> Any:

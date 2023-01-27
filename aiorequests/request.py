@@ -1,13 +1,15 @@
 from .cache_manger import Cache
 
 from utils import Json
-from configs import GLOBAL_CONFIG
+from configs import BS_FEATURE, GLOBAL_CONFIG
 
+from datetime import timedelta
 from logging import getLogger
 from traceback import format_exception
 from typing import Any, Literal, Optional, Union
 
 from aiohttp import ClientResponse, ClientSession, ClientTimeout
+from bs4 import BeautifulSoup
 from multidict import CIMultiDictProxy
 
 HEADERS = {
@@ -34,38 +36,62 @@ async def requests(
     headers: Optional[dict]=None,
     cookies: Optional[dict[str, str]]=None,
     raw: bool=False,
+    soup: bool=False,
     from_cache: bool=False,
     save_cache: bool=False,
+    cache_delta: Optional[timedelta]=None,
     timeout: Optional[float]=None,
     allow_redirects: bool = True,
-    max_redirects: int = 10
-) -> Optional[Union[bytes, CIMultiDictProxy, ClientResponse]]:
+    max_redirects: int = 10,
+    raise_exception: bool=False
+) -> Optional[Union[bytes, CIMultiDictProxy, ClientResponse, BeautifulSoup]]:
     """
     非同步請求。
 
-    url: :class:`str`
-        連結。
-    method: :class:`Literal["GET", "POST", "HEAD"]`
-        請求方法。
-    from_cache: :class:`bool`
-        是否從硬碟快取讀取。
-    save_cache: :class:`bool`
-        是否將快取儲存至硬碟。
+    :param url: :class:`str`連結。
+    :param client: :class:`ClientSession`對話。
+    :param headers: :class:`dict`請求標頭。
+    :param cookies: :class:`dict`請求Cookies。
+    :param raw: :class:`bool`是否返回原始回應(:class:`ClientResponse`)。
+    :param soup: :class:`bool`是否返回BeautifulSoup。
+    :param from_cache: :class:`bool`是否從快取讀取。
+    :param save_cache: :class:`bool`是否將資料儲存至快取。
+    :param cache_delta: :class:`bool`快取有效時間。
+    :param timeout: :class:`float`Timeout。
+    :param allow_redirects: :class:`bool`使否允許重新導向。
+    :param max_redirects: :class:`int`最大重新導向次數。
+    :param raise_exception: :class:`bool`發生錯誤時是否回傳。
     
-    return: :class:`Optional[Union[bytes, CIMultiDictProxy, ClientResponse]]`
+    :return: :class:`Optional[Union[bytes, CIMultiDictProxy, ClientResponse, BeautifulSoup]]`
     """
     try:
+        method = method.upper()
+        save_cache = True if from_cache else save_cache
         # 檢查是否從快取讀取
-        if from_cache:
-            save_cache = True
+        if not from_cache or raw or method == "HEAD":
+            pass
+        # 檢查快取是否有限時間
+        elif cache_delta == None:
+            # 檢查資源是否已快取
             if Cache.is_cached(url):
+                if soup:
+                    return BeautifulSoup(
+                        await Cache.read_cache(url),
+                        features=BS_FEATURE
+                    )
                 return await Cache.read_cache(url)
+        # 檢查快取是否超時
+        elif Cache.get_update_delta(url) < cache_delta:
+            if soup:
+                return BeautifulSoup(
+                    await Cache.read_cache(url),
+                    features=BS_FEATURE
+                )
+            return await Cache.read_cache(url)
         
         # 檢查是否需要開新連線
-        need_close = False
-        if client == None:
-            client = new_session(headers=headers, cookies=cookies)
-            need_close = True
+        need_close = False if client else True
+        client = client if client else new_session(headers=headers, cookies=cookies)
         
         kwargs = {
             "url": url,
@@ -73,7 +99,6 @@ async def requests(
             "max_redirects": max_redirects
         }
         # 判斷請求方式
-        method = method.upper()
         if method == "HEAD":
             __request = client.head
         elif method == "POST":
@@ -82,7 +107,7 @@ async def requests(
                 data = Json.dumps(data)
             kwargs["data"] = data
         else:
-            __request = client.get()
+            __request = client.get
         
         # 檢查是否需要新增標頭
         if headers != None:
@@ -102,6 +127,11 @@ async def requests(
             result = res
         elif method == "HEAD":
             result = res.headers.copy()
+        elif soup:
+            result = BeautifulSoup(
+                await res.content.read(),
+                features=BS_FEATURE
+            )
         else:
             result = await res.content.read()
             if save_cache:
@@ -115,9 +145,15 @@ async def requests(
         # 回傳
         return result
     except Exception as exc:
-        exc_text = "".join(format_exception(exc))
-        LOGGER.error(f"Requests Error: {exc_text}")
         # 檢查是否需要關閉連線
-        if need_close:
-            await client.close()
+        try:
+            if need_close:
+                await client.close()
+        except UnboundLocalError:
+            pass
+        # 檢查是否需要回傳錯誤
+        if raise_exception:
+            exc_text = "".join(format_exception(exc))
+            LOGGER.error(f"Requests Error: {exc_text}")
+            raise exc
         return None

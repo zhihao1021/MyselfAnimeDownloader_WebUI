@@ -153,6 +153,9 @@ LOGGING_CONFIG: dict[str, LoggingConfig] = {
 TIMEZONE: timezone = timezone(timedelta(hours=CONFIG["timezone"]))
 FFMPEG_ARGS = CONFIG["ffmpeg-args"]
 
+MYSELF_URL = "https://myself-bbs.com/"
+BS_FEATURE = "html.parser"
+
 with connect("data.db") as db:
     cursor = db.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type=\"table\";")
