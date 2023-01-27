@@ -1,51 +1,57 @@
 from aiorequests import Cache, requests
 from api import API
-from configs import *
+from configs import WEB_CONFIG
 from utils import Json
 from swap import IMAGE_CACHE_QUEUE
 
 from asyncio import new_event_loop
 from io import BytesIO
-from os.path import split as ossplit
+from os.path import isfile, join, split as ossplit
 
-from flask import Flask, redirect, render_template, request, send_file
-from eventlet import listen, wsgi
+from aiofiles import open as aopen
+from fastapi import FastAPI, Response
+from fastapi.responses import FileResponse, HTMLResponse
+from uvicorn import Config, Server
+
+def __templates(filename: str):
+    return join("/dashboard/templates", filename)
 
 class Dashboard:
-    app = Flask(__name__)
+    app = FastAPI(title=__name__)
     def __init__(self) -> None:
-        self.app.debug = WEB_DEBUG
-        self.app.logger = WEB_LOGGER
+        self.config = Config(
+            app=self.app,
+            host=WEB_CONFIG.host,
+            port=WEB_CONFIG.port,
+            log_config=None
+        )
+        self.server = Server(config=self.config)
 
     def run(self) -> None:
-        wsgi.server(
-            listen((WEB_HOST, WEB_PORT)),
-            self.app,
-            WEB_LOGGER
-        )
+        self.server.run()
 
-    @app.route("/")
-    def index():
-        return render_template("index.html")
+    @app.get("/", response_class=HTMLResponse)
+    async def root():
+        async with aopen(__templates("index.html")) as file:
+            return await file.read()
     
     # Include HTML
-    @app.route("/include-html/<filename>")
-    def include_html(filename):
-        try: return render_template(filename)
-        except: return "", 404
+    @app.get("/include-html/{filename}")
+    async def include_html(filename: str):
+        file_path = __templates(filename)
+        if not isfile(file_path):
+            return "", 404
+        async with aopen(file_path) as file:
+            return await file.read()
     
     # Image Cache
-    @app.route("/image_cache", methods=["POST", "GET"])
-    def image_cache():
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.values.to_dict()
-        _url = data.get("url")
-        _, _filename = ossplit(_url)
-        if Cache.is_cached(_url):
-            loop = new_event_loop()
-            res = loop.run_until_complete(requests(_url, from_cache=True))
+    @app.get("/image_cache")
+    async def image_cache(url: str):
+        _, filename = ossplit(url)
+        if Cache.is_cached(url):
+            res = await requests(url, from_cache=True)
+            FileResponse()
+            return Response(res, media_type="image/jpeg")
             loop.close()
             return send_file(
                 BytesIO(res),

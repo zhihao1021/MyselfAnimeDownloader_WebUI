@@ -1,13 +1,13 @@
 from utils import Json
 
 from copy import deepcopy
-from datetime import timedelta, timezone, time
+from datetime import timedelta, timezone
 from logging import getLevelName
 from os import makedirs
 from os.path import abspath, isdir, isfile
 from pydantic import BaseModel, Field, validator
 from sqlite3 import connect
-from typing import Union, Optional
+from typing import Union
 
 def __recursion_update(old_dict: dict, new_dict: dict) -> dict:
     """
@@ -110,17 +110,17 @@ EXAMPLE_CONFIG: dict[str, Union[dict, str, int]] = {
             "stream-level": "INFO",
             "file-level": "INFO",
             "backup-count": 10,
-            "file-name": "web",
+            "file-name": "main",
             "dir-path": "logs"
         },
         "myself": {
             "stream-level": "INFO",
             "file-level": "INFO",
             "backup-count": 10,
-            "file-name": "web",
+            "file-name": "myself",
             "dir-path": "logs"
         },
-        "web": {
+        "uvicorn": {
             "stream-level": "INFO",
             "file-level": "INFO",
             "backup-count": 10,
@@ -155,6 +155,8 @@ FFMPEG_ARGS = CONFIG["ffmpeg-args"]
 
 MYSELF_URL = "https://myself-bbs.com/"
 BS_FEATURE = "html.parser"
+
+MAX_LOGGER_NAME = max(*map(len, LOGGING_CONFIG.keys()))
 
 with connect("data.db") as db:
     cursor = db.cursor()

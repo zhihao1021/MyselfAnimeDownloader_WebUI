@@ -1,4 +1,4 @@
-from anime_module import M3U8, Myself, MyselfAnime, MyselfAnimeTable
+from anime_module import Myself, MyselfAnime, MyselfAnimeTable
 from configs import MYSELF_URL
 from swap import VIDEO_QUEUE
 
