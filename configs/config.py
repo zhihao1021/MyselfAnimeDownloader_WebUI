@@ -158,15 +158,15 @@ BS_FEATURE = "html.parser"
 
 MAX_LOGGER_NAME = max(*map(len, LOGGING_CONFIG.keys()))
 
-with connect("data.db") as db:
-    cursor = db.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type=\"table\";")
-    table_list = map(lambda tup: tup[0], cursor.fetchall())
-    if "cache" not in table_list:
-        cursor.execute("""
-            CREATE TABLE "cache" (
-                "url"    TEXT NOT NULL UNIQUE,
-                "update_time"    TEXT NOT NULL DEFAULT '1970-01-01T00:00:00',
-                PRIMARY KEY("url")
-            );
-        """)
+# with connect("data.db") as db:
+#     cursor = db.cursor()
+#     cursor.execute("SELECT name FROM sqlite_master WHERE type=\"table\";")
+#     table_list = map(lambda tup: tup[0], cursor.fetchall())
+#     if "cache" not in table_list:
+#         cursor.execute("""
+#             CREATE TABLE "cache" (
+#                 "url"    TEXT NOT NULL UNIQUE,
+#                 "update_time"    TEXT NOT NULL DEFAULT '1970-01-01T00:00:00',
+#                 PRIMARY KEY("url")
+#             );
+#         """)
