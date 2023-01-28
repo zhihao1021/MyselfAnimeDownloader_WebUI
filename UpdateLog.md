@@ -1,5 +1,5 @@
 # 開發日誌
-### MyselfAnimeDownloader WebUI開發日誌，最後更新日期`2023/01/12`
+### MyselfAnimeDownloader WebUI開發日誌，最後更新日期`2023/01/27`
 > 這是我第一次寫開發日誌，如果有不清楚的地方還請見諒。
 ---
 
