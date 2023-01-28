@@ -1,3 +1,3 @@
 from .json import Json
 from .threading_ import Thread
-from .utils import retouch_name
+from .utils import retouch_name, retouch_path

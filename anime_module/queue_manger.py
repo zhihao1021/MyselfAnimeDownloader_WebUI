@@ -4,9 +4,8 @@ from aiorequests import requests
 from configs import GLOBAL_CONFIG
 from utils import Thread
 
-from asyncio import all_tasks, new_event_loop, sleep, Queue
+from asyncio import all_tasks, new_event_loop, sleep as asleep, Queue
 from copy import deepcopy
-from time import sleep as b_sleep
 from typing import Optional
 
 from uuid import uuid1
@@ -18,6 +17,8 @@ class VideoQueue:
 
         :param thread_num: :class:`int`同時下載數量。
         """
+        # ID
+        self.__uuid = uuid1().hex[:8]
         # 資料表
         self.__downloader_dict: dict[str, M3U8] = {}
         # 順序清單
@@ -31,8 +32,6 @@ class VideoQueue:
         for _ in range(self.__thread_num):
             self.loop.create_task(self.__manage_job(), name=f"VQ-{self.__uuid} Manger")
 
-        # ID
-        self.__uuid = uuid1().hex[:8]
         
         Thread(target=self.__thread_job, name=f"VideoQueue-{self.__uuid}").start()
     
@@ -49,7 +48,7 @@ class VideoQueue:
             # 檢查是否有空閒中的任務
             queue_list = tuple(filter(lambda did: did not in self.__download_list, self.__queue_list))
             if len(queue_list) == 0:
-                await sleep(1)
+                await asleep(1)
                 continue
             # 取得新任務
             downloader_id = queue_list[0]
@@ -76,7 +75,7 @@ class VideoQueue:
         """
         等待60秒後移除下載器。
         """
-        await b_sleep(60)
+        await asleep(60)
         del self.__downloader_dict[downloader_id]
 
     def __after_update(self):
@@ -109,20 +108,15 @@ class VideoQueue:
         downloader = self.__downloader_dict.get(downloader_id)
         if downloader == None:
             return
-        # 尚未開始
-        if downloader.status_code() == 4:
-            pass
         # 正在下載中
         if downloader.started:
             downloader.stop(True)
             return
-        # 被中斷
-        if not downloader.finish:
-            downloader.stop(True)
+        downloader.stop(True)
 
         # 清除
         self.__queue_list.remove(downloader_id)
-        del self.__downloader_dict[downloader_id]
+        self.loop.create_task(self.__delete_job(downloader_id))
     
     def update(self, queue_list: list[str]) -> None:
         """
@@ -211,7 +205,7 @@ class ImageCacheQueue:
 
         self.loop = new_event_loop()
         for _ in range(connect_num):
-            self.loop.create_task(self.__downloader)
+            self.loop.create_task(self.__downloader())
         
         Thread(target=self.__thread_job, name=f"ImageCacheQueue-{self.__uuid}").start()
     
@@ -233,7 +227,7 @@ class ImageCacheQueue:
         while True:
             # 檢查是否有空閒中的任務
             if self.__image_queue.empty():
-                await sleep(0.1)
+                await asleep(0.1)
                 continue
             # 取得新任務
             _url = await self.__image_queue.get()

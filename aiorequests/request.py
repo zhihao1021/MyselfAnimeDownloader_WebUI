@@ -129,22 +129,26 @@ async def requests(
         res = await __request(**kwargs)
         
         # 設置回傳值
+        cache = None
         if raw:
             result = res
         elif method == "HEAD":
             result = res.headers.copy()
         elif soup:
+            cache = await res.content.read()
             result = BeautifulSoup(
-                await res.content.read(),
+                cache,
                 features=BS_FEATURE
             )
         elif json:
             result = await res.json()
         else:
-            result = await res.content.read()
-            if save_cache:
-                # 寫入快取
-                await Cache.write_cache(url, result)
+            cache = await res.content.read()
+            result = cache
+        
+        if save_cache and cache:
+            # 寫入快取
+            await Cache.write_cache(url, cache)
 
         # 檢查是否需要關閉連線
         if need_close:

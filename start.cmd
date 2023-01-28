@@ -1,2 +1,2 @@
 @ECHO OFF
-.\.venv\Scripts\activate && python test.py
+.\.venv\Scripts\activate && python main.py

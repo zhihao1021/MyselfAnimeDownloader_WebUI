@@ -15,5 +15,5 @@ function send_setting() {
         let key = ele.name;
         data[key] = ele.value;
     })
-    $.post("/api/send-setting", data)
+    postJSON("/api/send-setting", data);
 }

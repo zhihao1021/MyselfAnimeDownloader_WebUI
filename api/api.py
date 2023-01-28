@@ -1,9 +1,31 @@
-from anime_module import Myself, MyselfAnime, MyselfAnimeTable
+from anime_module import M3U8, Myself, MyselfAnime, MyselfAnimeTable
 from configs import MYSELF_URL
 from swap import VIDEO_QUEUE
 
 from asyncio import gather, create_task
+from pydantic import BaseModel, Field, validator
 from typing import Literal
+
+class OrmModeModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+class CacheData(OrmModeModel):
+    from_cache: bool=Field(True, alias="from-cache")
+
+class QueueModifyData(OrmModeModel):
+    modify: Literal["pause", "resume", "stop", "upper", "lower", "highest", "lowest"]
+    downloader_id: str=Field(alias="downloader-id")
+
+class SearchData(CacheData):
+    keyword: str
+
+class DownloadData(OrmModeModel):
+    episodes: list[MyselfAnime]
+
+class GetFinishData(CacheData):
+    page_index: int=Field(alias="page-index")
+
 class API:
     @staticmethod
     def queue_modify(modify: Literal["pause", "resume", "stop", "upper", "lower", "highest", "lowest"], downloader_id: str):
@@ -37,8 +59,7 @@ class API:
 
     @staticmethod
     def download_queue():
-        def gen_data(downloader_id: str):
-            downloader = VIDEO_QUEUE.get_downloader(downloader_id)
+        def gen_data(downloader_id: str, downloader: M3U8):
             return {
                 "name": f"{downloader.output_name} - {downloader.status()}",
                 "progress": downloader.get_progress(),
@@ -55,7 +76,7 @@ class API:
     async def search(keyword: str, from_cache=True):
         if MYSELF_URL in keyword:
             # 如果搜尋連結
-            anime_table = MyselfAnimeTable(keyword)
+            anime_table = MyselfAnimeTable(**{"url": keyword})
             try:
                 await anime_table.update(from_cache=from_cache)
                 return {
@@ -93,7 +114,7 @@ class API:
     async def get_week_anime(from_cache: bool=True):
         week_list = await Myself.weekly_update(from_cache=from_cache)
         result = list(map(
-            lambda day_data: list(map(lambda day_data: day_data[0].dict(), day_data)),
+            lambda day_data: list(map(lambda day_data: (day_data[0].dict(), day_data[1]), day_data)),
             week_list
         ))
         return result
@@ -108,9 +129,9 @@ class API:
         return result
     
     @staticmethod
-    async def get_finish_anime(page_index: int=1, from_cache: bool=True):
+    async def get_finish_anime(page_index: int, from_cache: bool=True):
         finish_list = await Myself.finish_list(from_cache=from_cache, start_page=page_index, page_num=1)
-        result = list(map(lambda anime_table: anime_table.dict, finish_list))
+        result = list(map(lambda anime_table: anime_table.dict(), finish_list))
         
         return result
     

@@ -55,7 +55,7 @@ function update_results(data) {
 
 // 更新資料頁面
 function update_anime(data) {
-    document.querySelector("#anime-img").src = `/image_cache?url=${data.IMAGE_URL}`
+    document.querySelector("#anime-img").src = `/image-cache?url=${data.IMAGE_URL}`
 
     document.querySelector("#anime-name .a-content").textContent = data.NAME
     document.querySelector("#anime-type .a-content").textContent = data.ANI_TYPE
@@ -81,6 +81,7 @@ function update_anime(data) {
     data.VIDEO_LIST.forEach((eps_data, index)=> {
         let new_ele = document.createElement("div");
         new_ele.classList.add("episode");
+        new_ele.animate_name = data.NAME;
         new_ele.tid = eps_data.TID;
         new_ele.vid = eps_data.VID;
         new_ele.onclick = function (event) {selected(this, event);};
@@ -175,17 +176,13 @@ function send_episode() {
     let episodes = []
     sel_episodes.forEach((ele)=>{
         episodes.push({
-            "eps_name": ele.textContent,
+            "animate-name": ele.animate_name,
+            "episode-name": ele.textContent,
             "tid": ele.tid,
             "vid": ele.vid
         })
         ele.classList.remove("sel");
     })
     data["episodes"] = episodes;
-    // $.post("/api/download", data);
-    $.ajax("/api/download", {
-        data: JSON.stringify(data),
-        contentType: "application/json",
-        type: "POST"
-    });
+    postJSON("/api/download", data);
 }
