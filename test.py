@@ -4,12 +4,14 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
 
+
 class Dashboard():
     app = FastAPI()
 
     @app.get("/")
     async def root():
         return HTMLResponse("Hello World")
+
 
 if __name__ == "__main__":
     logger_init()

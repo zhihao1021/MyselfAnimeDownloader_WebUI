@@ -28,12 +28,13 @@ STATSU_CODE_COLORS = {
     5: "bright_red",
 }
 
+
 class C_Formatter(Formatter):
-    def __init__(self, *args, use_color=False, auto_sep: bool=False, **kwargs) -> None:
+    def __init__(self, *args, use_color=False, auto_sep: bool = False, **kwargs) -> None:
         self.use_color = use_color
         self.auto_sep = auto_sep
         super().__init__(*args, **kwargs)
-    
+
     def __color_level_name(self, level_name: str, level_no: int):
         return style(text=level_name, fg=LEVEL_NAME_COLORS.get(level_no))
 
@@ -48,10 +49,12 @@ class C_Formatter(Formatter):
         name = record.name.split(".", 1)[0]
         if self.auto_sep:
             name += "-" * (MAX_LOGGER_NAME - len(name))
-        levelname = self.__color_level_name(record.levelname, record.levelno) if self.use_color else record.levelname
+        levelname = self.__color_level_name(
+            record.levelname, record.levelno) if self.use_color else record.levelname
         s = f"[{asctime}][{name}][{levelname}]:{sep}{message}"
         if record.exc_info:
-            record.exc_text = record.exc_text if record.exc_text else "".join(format_exception(*record.exc_info))
+            record.exc_text = record.exc_text if record.exc_text else "".join(
+                format_exception(*record.exc_info))
         if record.exc_text:
             s += "" if s.endswith("\n") else "\n"
             s += record.exc_text
@@ -61,6 +64,7 @@ class C_Formatter(Formatter):
             # from traceback import format_stack
             # s += format_stack(record.stack_info)
         return s
+
 
 class C_UvicornAccessFormatter(C_Formatter):
     def __get_status_code(self, status_code: int) -> str:
@@ -72,19 +76,23 @@ class C_UvicornAccessFormatter(C_Formatter):
             text=f"{status_code} {status_phrase}",
             fg=STATSU_CODE_COLORS.get(status_code // 100)
         )
-    
+
     def format(self, record: LogRecord) -> str:
         record = copy(record)
         client_addr, method, full_path, http_version, status_code = record.args
         request_line = "%s %s HTTP/%s" % (method, full_path, http_version)
-        request_line = style(text=request_line, bold=True) if self.use_color else request_line
-        status_code = self.__get_status_code(int(status_code)) if self.use_color else status_code
+        request_line = style(
+            text=request_line, bold=True) if self.use_color else request_line
+        status_code = self.__get_status_code(
+            int(status_code)) if self.use_color else status_code
         record.args = ()
-        record.msg = "%s - \"%s\" %s" % (client_addr, request_line, status_code)
+        record.msg = "%s - \"%s\" %s" % (client_addr,
+                                         request_line, status_code)
         return super().format(record=record)
 
+
 class C_FileHandler(StreamHandler):
-    def __init__(self, filename: str, backupCount: int=0, level=NOTSET):
+    def __init__(self, filename: str, backupCount: int = 0, level=NOTSET):
         self.level = 10
         if not filename.endswith(".log"):
             filename += ".log"
@@ -98,7 +106,7 @@ class C_FileHandler(StreamHandler):
             raw_data = open(self.baseFilename, mode="rb").read()
             if raw_data != b"":
                 self.rotate()
-    
+
     def close(self):
         self.acquire()
         if self.stream:
@@ -107,19 +115,19 @@ class C_FileHandler(StreamHandler):
             self.stream = None
         super().close()
         self.release()
-    
+
     def emit(self, record):
         if self.stream == None:
             self.stream = self._open()
         if self.stream:
             super().emit(record=record)
-    
+
     def should_rollover(self) -> bool:
         if datetime.now(TIMEZONE) >= self.nextRolloverDay:
             self.nextRolloverDay = self._next_rollover()
             return True
         return False
-    
+
     def rotate(self) -> bool:
         self.close()
         rolloverName = self._gen_filename()
@@ -134,30 +142,33 @@ class C_FileHandler(StreamHandler):
         self.stream = self._open()
         self.nextRolloverDay = self._next_rollover()
         self._delete_file()
-    
+
     def _open(self) -> TextIOWrapper:
         return open(self.baseFilename, mode="a", encoding="utf-8")
-    
+
     def _gen_filename(self) -> str:
         isoTime = datetime.now(TIMEZONE).replace(microsecond=0).isoformat()
         strTime = isoTime.replace(":", "_")
         fileTitle, _ = splitext(self.baseFilename)
         return f"{fileTitle} {strTime}.log"
-    
+
     def _delete_file(self) -> None:
-        if self.backupCount == 0: return
+        if self.backupCount == 0:
+            return
         dirPath, fileName = split(self.baseFilename)
         fileTitle, _ = splitext(fileName)
         fileTitle += " "
         logs = [_fn for _fn in listdir(dirPath) if _fn.startswith(fileTitle)]
+
         def _sort_time(logName: str):
             logName, _ = splitext(logName)
             strTime = logName.removeprefix(fileTitle)
             isoTime = strTime.replace("_", ":")
             return datetime.fromisoformat(isoTime)
         logs.sort(key=_sort_time, reverse=True)
-        for logName in logs[self.backupCount:]: remove(join(dirPath, logName))
-    
+        for logName in logs[self.backupCount:]:
+            remove(join(dirPath, logName))
+
     def _next_rollover(self) -> datetime:
         _nextRolloverDate = datetime.now(TIMEZONE).date() + timedelta(days=1)
         _zeroTime = time(hour=0, minute=0, second=0)
@@ -167,12 +178,14 @@ class C_FileHandler(StreamHandler):
         level = getLevelName(self.level)
         return f"<{self.__class__.__name__} {self.baseFilename} ({level})>"
 
+
 class C_StreamHandler(StreamHandler):
     def __init__(self, *args, level=NOTSET, **kwargs):
         self.level = 10
         super().__init__(*args, **kwargs)
         self.setFormatter(C_Formatter(use_color=True, auto_sep=True))
         self.setLevel(level)
+
 
 def logger_init():
     for name in LOGGING_CONFIG.keys():
@@ -199,7 +212,8 @@ def logger_init():
                 backupCount=config.backup_count,
                 level=config.file_level
             )
-            access_file_handler.formatter = C_UvicornAccessFormatter(use_color=False)
+            access_file_handler.formatter = C_UvicornAccessFormatter(
+                use_color=False)
             logger = getLogger("uvicorn.access")
             logger.handlers = [
                 C_FileHandler(

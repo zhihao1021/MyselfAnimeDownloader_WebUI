@@ -2,9 +2,11 @@ from anime_module import Myself, MyselfAnimeTable, MyselfAnime
 
 from unittest import TestCase, IsolatedAsyncioTestCase
 
+
 class MyselfTestCase(TestCase):
     def test_MyselfAnime(self):
-        result = MyselfAnime(**{"animate-name": "HELLO WORLD【全 1 集】", "episode-name": "第 01 話", "tid": "46195", "vid": "001"})
+        result = MyselfAnime(**{"animate-name": "HELLO WORLD【全 1 集】",
+                             "episode-name": "第 01 話", "tid": "46195", "vid": "001"})
 
         expected = {
             "ANI_NAME": "HELLO WORLD【全 1 集】",
@@ -13,10 +15,11 @@ class MyselfTestCase(TestCase):
             "VID": "001",
         }
         self.assertDictEqual(result.dict(), expected)
-    
+
     def test_MyselfAnimeTable(self):
-        result = MyselfAnimeTable(**{"url": "https://myself-bbs.com/thread-46195-1-1.html"})
-        
+        result = MyselfAnimeTable(
+            **{"url": "https://myself-bbs.com/thread-46195-1-1.html"})
+
         expected = expected = {
             "URL": "https://myself-bbs.com/thread-46195-1-1.html",
             "TID": "46195",
@@ -34,6 +37,7 @@ class MyselfTestCase(TestCase):
         }
         self.assertDictEqual(result.dict(), expected)
 
+
 class MyselfTestCase_Async(IsolatedAsyncioTestCase):
     async def test_MyselfAnime_get_m3u8_url(self):
         result = await MyselfAnime(**{"animate-name": "HELLO WORLD【全 1 集】", "episode-name": "第 01 話", "tid": "46195", "vid": "001"}).get_m3u8_url()
@@ -44,7 +48,8 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         self.assertEqual(type(m3u8_file), str)
 
     async def test_MyselfAnimeTable_update(self):
-        result = MyselfAnimeTable(**{"url": "https://myself-bbs.com/thread-46195-1-1.html"})
+        result = MyselfAnimeTable(
+            **{"url": "https://myself-bbs.com/thread-46195-1-1.html"})
         await result.update()
 
         expected = {
@@ -84,7 +89,7 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         self.assertEqual(type(anime_tuple), tuple)
         self.assertEqual(type(anime), MyselfAnimeTable)
         self.assertEqual(type(name), str)
-    
+
     async def test_Myself_year_list(self):
         result: dict[str, list[MyselfAnimeTable]]
         result = await Myself.year_list()
@@ -96,7 +101,7 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         self.assertEqual(type(year_key), str)
         self.assertEqual(type(yearresult), list)
         self.assertEqual(type(anime), MyselfAnimeTable)
-    
+
     async def test_Myself_finish_list(self):
         result = await Myself.finish_list(1, 5)
 
@@ -105,7 +110,7 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         self.assertEqual(type(result_list), list)
         self.assertEqual(type(anime), MyselfAnimeTable)
         self.assertEqual(100, len(result_list))
-    
+
     async def test_Myself_search(self):
         result = await Myself.search("Hello World")
 
@@ -113,4 +118,3 @@ class MyselfTestCase_Async(IsolatedAsyncioTestCase):
         anime = result_list[0]
         self.assertEqual(type(result_list), list)
         self.assertEqual(type(anime), MyselfAnimeTable)
-        

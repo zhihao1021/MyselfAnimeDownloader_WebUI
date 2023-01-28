@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, validator
 from sqlite3 import connect
 from typing import Union
 
+
 def __recursion_update(old_dict: dict, new_dict: dict) -> dict:
     """
     遞迴更新字典。
@@ -22,6 +23,7 @@ def __recursion_update(old_dict: dict, new_dict: dict) -> dict:
             old_dict[key] = value
     return old_dict
 
+
 def path_validator(path: str):
     if not isdir(path := abspath(path)):
         makedirs(path)
@@ -33,55 +35,61 @@ def path_validator(path: str):
 # INFO
 # DEBUG
 # NOTSET
+
+
 class LoggingConfig(BaseModel):
-    stream_level: Union[int, str]=Field(20, alias="stream-level")
-    file_level: Union[int, str]=Field(20, alias="file-level")
-    backup_count: int=Field(3, alias="backup-count", ge=0)
-    file_name: str=Field(alias="file-name")
-    dir_path: str=Field("logs", alias="dir-path")
+    stream_level: Union[int, str] = Field(20, alias="stream-level")
+    file_level: Union[int, str] = Field(20, alias="file-level")
+    backup_count: int = Field(3, alias="backup-count", ge=0)
+    file_name: str = Field(alias="file-name")
+    dir_path: str = Field("logs", alias="dir-path")
 
     @validator("stream_level", "file_level")
     def level_name_validator(cls, value):
         if value if type(value) == int else getLevelName(value) in range(0, 51, 10):
             return value
         raise ValueError(f"Illegal level name: \"{value}\"")
-    
+
     @validator("dir_path")
     def path_validator(cls, value):
         return path_validator(value)
-    
+
     class Config:
         extra = "ignore"
 
+
 class WebConfig(BaseModel):
-    host: str=Field("0.0.0.0")
-    port: int=Field(5000)
+    host: str = Field("0.0.0.0")
+    port: int = Field(5000)
+
 
 class GlobalConfig(BaseModel):
-    user_agent: str=Field(
+    user_agent: str = Field(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)",
         alias="user-agent",
     )
-    connections: int=Field(10, ge=1)
-    worker: int=Field(3, ge=1)
-    retry: int=Field(3, ge=0)
-    timeout: float=Field(5, ge=0)
-    temp_path: str=Field("temp", alias="temp-path")
-    
+    connections: int = Field(10, ge=1)
+    worker: int = Field(3, ge=1)
+    retry: int = Field(3, ge=0)
+    timeout: float = Field(5, ge=0)
+    temp_path: str = Field("temp", alias="temp-path")
+
     @validator("temp_path")
     def path_validator(cls, value):
         return path_validator(value)
 
+
 class MyselfConfig(BaseModel):
-    check_update: int=Field(5, ge=0)
-    classify: bool=Field(True)
-    file_name: str=Field("[Myself]$NAME $EPS", alias="file-name")
-    dir_name: str=Field("[Myself]$NAME", alias="dir-name")
-    download_path: str=Field("download/myself", alias="download-path")
+    check_update: int = Field(5, ge=0)
+    classify: bool = Field(True)
+    file_name: str = Field("[Myself]$NAME $EPS", alias="file-name")
+    dir_name: str = Field("[Myself]$NAME", alias="dir-name")
+    download_path: str = Field("download/myself", alias="download-path")
 
     @validator("download_path")
     def path_validator(cls, value):
         return path_validator(value)
+
 
 EXAMPLE_CONFIG: dict[str, Union[dict, str, int]] = {
     "web": {

@@ -16,6 +16,7 @@ from urllib.parse import urljoin, urlparse
 from aiofiles import open as aopen
 from aiohttp import ClientSession
 
+
 def recursion_delete_dir(dir_path: str):
     delete_num = 0
     for path, folder, file in walk(dir_path, topdown=False):
@@ -28,13 +29,14 @@ def recursion_delete_dir(dir_path: str):
     if delete_num:
         recursion_delete_dir(dir_path)
 
+
 class M3U8:
     def __init__(self,
-        host: str,
-        m3u8_file: str,
-        output_name: str,
-        output_dir: Optional[str]=None,
-    ) -> None:
+                 host: str,
+                 m3u8_file: str,
+                 output_name: str,
+                 output_dir: Optional[str] = None,
+                 ) -> None:
         """
         M3U8下載器。
 
@@ -51,11 +53,13 @@ class M3U8:
         # 輸出檔名
         self.output_name = output_name
         # 輸出資料夾
-        self.output_dir = "download" if output_dir == None else abspath(output_dir)
+        self.output_dir = "download" if output_dir == None else abspath(
+            output_dir)
         # 暫存資料夾
         self.temp_dir = abspath(join(
             GLOBAL_CONFIG.temp_path,
-            retouch_path(split(urlparse(self.host).path)[0]).removeprefix("/").removeprefix("\\")
+            retouch_path(split(urlparse(self.host).path)[
+                         0]).removeprefix("/").removeprefix("\\")
         ))
 
         # FFmpeg路徑
@@ -65,7 +69,7 @@ class M3U8:
 
         self.__logger = getLogger("main")
         self.__block_num = 0       # 區塊數
-        self.__block_progress = [] # 區塊進度
+        self.__block_progress = []  # 區塊進度
         self.__exception = None    # 發生的錯誤
 
         # 協程列表
@@ -83,7 +87,8 @@ class M3U8:
         """
         開始下載。
         """
-        if self.started: return
+        if self.started:
+            return
         client = new_session(headers={
             "referer": "https://v.myself-bbs.com/",
             "origin": "https://v.myself-bbs.com",
@@ -113,15 +118,16 @@ class M3U8:
                 total_file_list.append(line)
                 # 更新區塊數量
                 self.__block_num += 1
-        
+
         while True:
             # 新增下載協程
             for _ in range(GLOBAL_CONFIG.connections):
-                self.tasks.append(create_task(self.__download(ts_urls, client)))
+                self.tasks.append(create_task(
+                    self.__download(ts_urls, client)))
             self.tasks.append(create_task(self.__block_check()))
             # 開始下載
             res = await gather(*self.tasks, return_exceptions=True)
-            
+
             if "block" in res:
                 self.__logger.info(f"M3U8: 檢測到中斷，開始重新下載`{self.output_name}`。")
                 self.tasks = []
@@ -129,7 +135,8 @@ class M3U8:
                     await ts_urls.put(_file)
                 continue
             elif False in map(self.__check_file_finish, total_file_list) and self.get_progress() == 1:
-                self.__logger.info(f"M3U8: 檢測到文件缺失，開始重新下載`{self.output_name}`。")
+                self.__logger.info(
+                    f"M3U8: 檢測到文件缺失，開始重新下載`{self.output_name}`。")
                 self.tasks = []
                 for file in total_file_list:
                     await ts_urls.put(file)
@@ -140,7 +147,8 @@ class M3U8:
 
         # 如果發生錯誤
         if self.__exception != None:
-            self.__logger.error(f"M3U8: 已取消下載`{self.output_name}`，錯誤訊息:{''.join(format_exception(self.__exception))}")
+            self.__logger.error(
+                f"M3U8: 已取消下載`{self.output_name}`，錯誤訊息:{''.join(format_exception(self.__exception))}")
             self.started = False
             self.finish = True
             return
@@ -154,7 +162,6 @@ class M3U8:
             self.__logger.info(f"M3U8: 已被中斷下載`{self.output_name}`。")
             self.started = False
             return
-
 
         # 檢查輸出資料夾是否存在
         if not isdir(self.output_dir):
@@ -171,11 +178,12 @@ class M3U8:
 
         loop = get_running_loop()
         subprocessres = await loop.run_in_executor(None,
-            lambda: run(
-                " ".join(ffmpeg_commands),
-                shell=False, stdout=DEVNULL, stderr=PIPE
-            ),
-        )
+                                                   lambda: run(
+                                                       " ".join(
+                                                           ffmpeg_commands),
+                                                       shell=False, stdout=DEVNULL, stderr=PIPE
+                                                   ),
+                                                   )
         if subprocessres.stderr != b"":
             if not isdir("ffmpeg-error"):
                 makedirs("ffmpeg-error")
@@ -184,13 +192,14 @@ class M3U8:
                 mode="wb",
             ) as open_file:
                 await open_file.write(subprocessres.stderr)
-            self.__logger.error(f"M3U8: FFmpeg Error: {subprocessres.stderr.decode()}")
+            self.__logger.error(
+                f"M3U8: FFmpeg Error: {subprocessres.stderr.decode()}")
         else:
             self.__clean_up()
         self.__logger.info(f"M3U8: 已完成下載`{self.output_name}`。")
         self.finish = True
         self.started = False
-    
+
     async def __download(self, url_queue: Queue, client: ClientSession):
         while not url_queue.empty():
             self.__block_progress.append(0)
@@ -246,7 +255,8 @@ class M3U8:
                     # 檢查是否超過最大重試次數
                     if exception_times > GLOBAL_CONFIG.retry and GLOBAL_CONFIG.retry != 0:
                         # 停止所有協程
-                        self.__logger.error(f"M3U8下載發生錯誤，已達到第 {exception_times} 次重試，將停止下載，連結:`{url}`。")
+                        self.__logger.error(
+                            f"M3U8下載發生錯誤，已達到第 {exception_times} 次重試，將停止下載，連結:`{url}`。")
                         self.__exception = exception
                         for task in self.tasks:
                             if task == current_task():
@@ -255,10 +265,11 @@ class M3U8:
                         current_task().cancel(f"Exception: {exception}")
                         raise CancelledError
                     exception_times += 1
-                    self.__logger.warning(f"M3U8下載發生錯誤，將於 5 秒後重新下載，第 {exception_times} 次重試，連結:`{url}`。")
+                    self.__logger.warning(
+                        f"M3U8下載發生錯誤，將於 5 秒後重新下載，第 {exception_times} 次重試，連結:`{url}`。")
                     await sleep(5)
                     continue
-    
+
     async def __block_check(self):
         alive = True
         while alive:
@@ -282,7 +293,7 @@ class M3U8:
                         continue
                     task.cancel(f"")
                 return "block"
-            
+
     def get_progress(self) -> float:
         """
         取得下載進度: 0~1(以區塊數量計算，非真實數值)。
@@ -296,14 +307,15 @@ class M3U8:
             return 0
 
         return min(1, total_progress / self.__block_num)
-    
+
     def pause(self) -> None:
-        if self.started: self.pause_ = True
-    
+        if self.started:
+            self.pause_ = True
+
     def resume(self) -> None:
         self.pause_ = False
-    
-    def stop(self, clean: bool=False) -> None:
+
+    def stop(self, clean: bool = False) -> None:
         """
         停止下載。
 
@@ -318,7 +330,7 @@ class M3U8:
         if clean:
             self.__clean_up()
             self.finish = True
-    
+
     def status_code(self) -> int:
         """
         回傳當前狀態碼。
@@ -333,16 +345,19 @@ class M3U8:
         :param return: :class:`int`0~6。
         """
         if self.started:
-            if self.pause_: return 1
+            if self.pause_:
+                return 1
             return 0
-        if self.stop_ == None: return 2
+        if self.stop_ == None:
+            return 2
         if self.stop_ == False:
             if self.finish:
                 return 3
             return 4
-        if self.stop_: return 5
+        if self.stop_:
+            return 5
         return 6
-    
+
     def status(self) -> str:
         """
         回傳當前狀態。
@@ -351,11 +366,11 @@ class M3U8:
         """
         code = self.status_code()
         return ["下載中", "暫停中", "中斷", "完成", "尚未開始", "中止", "發生錯誤"][code]
-    
+
     def __check_file_finish(self, file_name: str):
         finish_file_path = join(self.temp_dir, f"f_{file_name}")
         return isfile(finish_file_path)
-    
+
     def __clean_up(self) -> None:
         if isdir(self.temp_dir):
             rmtree(self.temp_dir)
