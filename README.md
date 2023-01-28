@@ -4,7 +4,7 @@ Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/
 此程式依賴於[Myself](https://myself-bbs.com/)，需網站存在才可使用。
 
 ## 當前版本
-Release 1.0
+Release 1.1
 
 ## 運行依賴
 1.此專案依賴於`FFmpeg`，請確保在電腦環境中有`FFmpeg`。
@@ -42,8 +42,8 @@ Release 1.0
 5.運行程式<br>
 使用`python3 main.py`運行程式。
 
-## 開發日誌(2023/01/12)
-[查看開發日誌](UpdateLog.md/#20230112)
+## 開發日誌(22023/01/27)
+[查看開發日誌](UpdateLog.md/#20230127)
 
 ## 開發環境
 ```

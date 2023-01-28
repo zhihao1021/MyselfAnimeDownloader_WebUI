@@ -1,4 +1,4 @@
-VERSION = "Release 1.0"
+VERSION = "Release 1.1"
 
 from aiorequests import requests
 from configs import logger_init
