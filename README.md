@@ -1,6 +1,8 @@
 # MyselfAnimeDownloader_WebUI
 Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/hgalytoby/MyselfAnimeDownloader
 
+此程式依賴於[Myself](https://myself-bbs.com/)，需網站存在才可使用。
+
 ## 當前版本
 Release 1.0
 
