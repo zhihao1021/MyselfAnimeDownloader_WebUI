@@ -1,0 +1,10 @@
+@import url(info-loading.css);
+@import url(info-result.css);
+@import url(info-anime.css);
+@import url(info-search.css);
+
+
+#info {
+    height: 100%;
+    width: 100%;
+}

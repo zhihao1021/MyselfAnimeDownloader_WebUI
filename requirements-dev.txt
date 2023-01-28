@@ -1,0 +1,11 @@
+aiofiles
+aiohttp
+aiosqlite
+beautifulsoup4
+orjson
+psutil
+pydantic
+pyinstaller
+websockets
+fastapi
+uvicorn[standard]

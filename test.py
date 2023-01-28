@@ -1,30 +1,17 @@
-from anime_module import Myself, M3U8
+from configs import logger_init
 
-from asyncio import new_event_loop, all_tasks
-from time import sleep
-from threading import Thread
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+import uvicorn
 
-async def main():
-    res = await Myself.weekly_update()
-    anime_table = res[-1][-2][0]
-    await anime_table.update()
-    anime = anime_table.VIDEO_LIST[0]
-    _host, _file = await anime.get_m3u8_url()
+class Dashboard():
+    app = FastAPI()
 
-    downloader = M3U8(
-        _host,
-        _file,
-        "test"
-    )
-    return downloader
+    @app.get("/")
+    async def root():
+        return HTMLResponse("Hello World")
 
-loop = new_event_loop()
-downloader = loop.run_until_complete(main())
-
-Thread(target=loop.run_until_complete, args=(downloader.download(10),)).start()
-
-while True:
-    print(f"{format(downloader.get_progress() * 100, '.2f')}%", end="\r")
-    sleep(0.1)
-
-input("End")
+if __name__ == "__main__":
+    logger_init()
+    dashboard = Dashboard()
+    uvicorn.run(dashboard.app, host="0.0.0.0", port=5001, log_config=None)

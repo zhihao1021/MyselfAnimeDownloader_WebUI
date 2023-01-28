@@ -1,9 +1,31 @@
-from modules import Json
+from utils import Json
 
-from os.path import isfile
-from datetime import timedelta, timezone, time
+from copy import deepcopy
+from datetime import timedelta, timezone
 from logging import getLevelName
+from os import makedirs
+from os.path import abspath, isdir, isfile
+from pydantic import BaseModel, Field, validator
+from sqlite3 import connect
 from typing import Union
+
+def __recursion_update(old_dict: dict, new_dict: dict) -> dict:
+    """
+    遞迴更新字典。
+    """
+    for key, value in new_dict.items():
+        if type(value) == dict:
+            old_value = old_dict.get(key, {})
+            old_value = __recursion_update(old_value, value)
+            old_dict[key] = old_value
+        else:
+            old_dict[key] = value
+    return old_dict
+
+def path_validator(path: str):
+    if not isdir(path := abspath(path)):
+        makedirs(path)
+    return path
 
 # CRITICAL
 # ERROR
@@ -11,109 +33,140 @@ from typing import Union
 # INFO
 # DEBUG
 # NOTSET
+class LoggingConfig(BaseModel):
+    stream_level: Union[int, str]=Field(20, alias="stream-level")
+    file_level: Union[int, str]=Field(20, alias="file-level")
+    backup_count: int=Field(3, alias="backup-count", ge=0)
+    file_name: str=Field(alias="file-name")
+    dir_path: str=Field("logs", alias="dir-path")
 
-class LoggingConfig:
-    STREAM_LEVEL: int = 20
-    FILE_LEVEL: int = 20
-    BACKUP_COUNT: int
-    FILE_NAME: str
-    DIR_PATH: str
-    def __init__(self, data: dict) -> None:
-        if type(getLevelName(data["stream_level"])) == int:
-            self.STREAM_LEVEL = data["stream_level"]
-        if type(getLevelName(data["file_level"])) == int:
-            self.FILE_LEVEL = data["file_level"]
-        self.BACKUP_COUNT = abs(data["backup_count"])
-        self.FILE_NAME = data["file_name"]
-        self.DIR_PATH = data["dir_path"]
+    @validator("stream_level", "file_level")
+    def level_name_validator(cls, value):
+        if value if type(value) == int else getLevelName(value) in range(0, 51, 10):
+            return value
+        raise ValueError(f"Illegal level name: \"{value}\"")
+    
+    @validator("dir_path")
+    def path_validator(cls, value):
+        return path_validator(value)
+    
+    class Config:
+        extra = "ignore"
 
-CONFIG = {
+class WebConfig(BaseModel):
+    host: str=Field("0.0.0.0")
+    port: int=Field(5000)
+
+class GlobalConfig(BaseModel):
+    user_agent: str=Field(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)",
+        alias="user-agent",
+    )
+    connections: int=Field(10, ge=1)
+    worker: int=Field(3, ge=1)
+    retry: int=Field(3, ge=0)
+    timeout: float=Field(5, ge=0)
+    temp_path: str=Field("temp", alias="temp-path")
+    
+    @validator("temp_path")
+    def path_validator(cls, value):
+        return path_validator(value)
+
+class MyselfConfig(BaseModel):
+    check_update: int=Field(5, ge=0)
+    classify: bool=Field(True)
+    file_name: str=Field("[Myself]$NAME $EPS", alias="file-name")
+    dir_name: str=Field("[Myself]$NAME", alias="dir-name")
+    download_path: str=Field("download/myself", alias="download-path")
+
+    @validator("download_path")
+    def path_validator(cls, value):
+        return path_validator(value)
+
+EXAMPLE_CONFIG: dict[str, Union[dict, str, int]] = {
     "web": {
         "host": "0.0.0.0",
         "port": 5000,
-        "debug": True,
+        "debug": False
     },
     "global": {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)",
         "connections": 10,
-        "threads": 3,
+        "threads": 5,
         "retry": 3,
-        "zerofill": 2,
         "timeout": 5,
+        "temp-path": "temp",
+        "zerofill": 2
     },
     "myself": {
-        "check_update": 5,
+        "check-update": 5,
         "classify": True,
-        "file_name": "[Myself]$NAME $NOTE $NUM集",
-        "dir_name": "[Myself]$NAME",
-        "download_path": "download/myself",
-    },
-    "sql": {
-        "database": "data",
+        "file-name": "[Myself]$NAME $EPS",
+        "dir-name": "[Myself]$NAME",
+        "download-path": "download/myself"
     },
     "logging": {
         "main": {
-            "stream_level": "INFO",
-            "file_level": "INFO",
-            "backup_count": 3,
-            "file_name": "main",
-            "dir_path": "logs",
+            "stream-level": "INFO",
+            "file-level": "INFO",
+            "backup-count": 10,
+            "file-name": "main",
+            "dir-path": "logs"
         },
         "myself": {
-            "stream_level": "INFO",
-            "file_level": "INFO",
-            "backup_count": 3,
-            "file_name": "myself",
-            "dir_path": "logs",
+            "stream-level": "INFO",
+            "file-level": "INFO",
+            "backup-count": 10,
+            "file-name": "myself",
+            "dir-path": "logs"
         },
-        "web": {
-            "stream_level": "INFO",
-            "file_level": "INFO",
-            "backup_count": 3,
-            "file_name": "web",
-            "dir_path": "logs",
-        },
+        "uvicorn": {
+            "stream-level": "INFO",
+            "file-level": "INFO",
+            "backup-count": 10,
+            "file-name": "web",
+            "dir-path": "logs"
+        }
     },
     "timezone": 8,
-    "ffmpeg_args": "",
+    "ffmpeg-args": ""
 }
+CONFIG: dict[str, Union[dict, str, int]] = ...
 
+# 更新資料
 try:
-    RAW_CONFIG: dict[str, Union[dict, str, int]] = Json.load("config.json")
-    for key, value in RAW_CONFIG.items():
-        if type(value) == dict:
-            for s_key, s_value in value.items():
-                CONFIG[key][s_key] = s_value
-        else:
-            CONFIG[key] = value
-except: pass
-finally:
-    Json.dump("config.json", CONFIG)
+    config = Json.load_nowait("config.json")
+except:
+    config = deepcopy(EXAMPLE_CONFIG)
+CONFIG = __recursion_update(EXAMPLE_CONFIG, config)
+Json.dump_nowait("config.json", CONFIG)
 
-WEB_HOST: str = CONFIG["web"]["host"]
-WEB_PORT: int = CONFIG["web"]["port"]
-WEB_DEBUG: bool = CONFIG["web"]["debug"]
-
-UA: str = CONFIG["global"]["user-agent"]
-CONS: int = CONFIG["global"]["connections"]
-THRS: int = CONFIG["global"]["threads"]
-RETRY: int = CONFIG["global"]["retry"]
-ZFILL: int = CONFIG["global"]["zerofill"]
-TIMEOUT: float = CONFIG["global"]["timeout"]
-
-MYSELF_UPDATE: int = CONFIG["myself"]["check_update"]
-MYSELF_CLASSIFY: bool = CONFIG["myself"]["classify"]
-MYSELF_FILE: str = CONFIG["myself"]["file_name"]
-MYSELF_DIR: str = CONFIG["myself"]["dir_name"]
-MYSELF_DOWNLOAD: str = CONFIG["myself"]["download_path"]
-
-SQL_DB = f"{CONFIG['sql']['database']}.db",
+WEB_CONFIG = WebConfig(**CONFIG["web"])
+GLOBAL_CONFIG = GlobalConfig(**CONFIG["global"])
+MYSELF_CONFIG = MyselfConfig(**CONFIG["myself"])
 
 LOGGING_CONFIG: dict[str, LoggingConfig] = {
-    "main": LoggingConfig(CONFIG["logging"]["main"]),
-    "myself": LoggingConfig(CONFIG["logging"]["myself"]),
-    "web": LoggingConfig(CONFIG["logging"]["web"]),
+    key: LoggingConfig(**value)
+    for key, value in CONFIG["logging"].items()
 }
 
 TIMEZONE: timezone = timezone(timedelta(hours=CONFIG["timezone"]))
-FFMPEG_ARGS: str = CONFIG["ffmpeg_args"]
+FFMPEG_ARGS = CONFIG["ffmpeg-args"]
+
+MYSELF_URL = "https://myself-bbs.com/"
+BS_FEATURE = "html.parser"
+
+MAX_LOGGER_NAME = max(*map(len, LOGGING_CONFIG.keys()))
+
+with connect("data.db") as db:
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type=\"table\";")
+    table_list = map(lambda tup: tup[0], cursor.fetchall())
+    if "cache" not in table_list:
+        cursor.execute("""
+            CREATE TABLE "cache" (
+                "url"    TEXT NOT NULL UNIQUE,
+                "update_time"    TEXT NOT NULL DEFAULT '1970-01-01T00:00:00',
+                PRIMARY KEY("url")
+            );
+        """)
