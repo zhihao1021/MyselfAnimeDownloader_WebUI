@@ -8,22 +8,8 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('dashboard', 'dashboard')
-    ],
-    hiddenimports=[
-        'dns',
-        'dns.asyncbackend',
-        'dns.asyncquery',
-        'dns.asyncresolver',
-        'dns.e164',
-        'dns.namedict',
-        'dns.tsigkeyring',
-        'dns.versioned',
-        'eventlet.hubs.epolls',
-        'eventlet.hubs.kqueue',
-        'eventlet.hubs.selects'
-    ],
+    datas=[],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
