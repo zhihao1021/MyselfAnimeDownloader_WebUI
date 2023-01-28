@@ -9,6 +9,7 @@ from utils import retouch_name
 
 from aiofiles import open as aopen
 
+
 def url2cache_path(url: str) -> tuple[str, str]:
     """
     :return: dirpath, filepath
@@ -22,6 +23,7 @@ def url2cache_path(url: str) -> tuple[str, str]:
 
     return ossplit(result)[0], result
 
+
 class Cache:
     @staticmethod
     def is_cached(url: str) -> bool:
@@ -30,7 +32,7 @@ class Cache:
         """
         _, cache_path = url2cache_path(url)
         return isfile(cache_path)
-    
+
     @staticmethod
     async def read_cache(url: str) -> bytes:
         """
@@ -39,7 +41,7 @@ class Cache:
         _, cache_path = url2cache_path(url)
         async with aopen(cache_path, mode="rb") as open_file:
             return await open_file.read()
-    
+
     @staticmethod
     def read_cache_nowait(url: str) -> bytes:
         """
@@ -48,7 +50,7 @@ class Cache:
         _, cache_path = url2cache_path(url)
         with open(cache_path, mode="rb") as open_file:
             return open_file.read()
-    
+
     @staticmethod
     async def write_cache(url: str, content: Union[bytes, str]) -> int:
         """
@@ -61,7 +63,7 @@ class Cache:
         # 寫入資料
         async with aopen(cache_path, mode="wb") as open_file:
             return await open_file.write(content)
-    
+
     @staticmethod
     def write_cache_nowait(url: str, content: Union[bytes, str]) -> int:
         """
@@ -74,14 +76,14 @@ class Cache:
         # 寫入資料
         with open(cache_path, mode="wb") as open_file:
             return open_file.write(content)
-    
+
     @staticmethod
     def get_update_time(url: str) -> datetime:
         _, cache_path = url2cache_path(url)
         if isfile(cache_path):
             return datetime.fromtimestamp(getmtime(cache_path), tz=TIMEZONE)
         return datetime.fromtimestamp(0, tz=TIMEZONE)
-    
+
     @staticmethod
     def get_update_delta(url: str) -> timedelta:
         return datetime.now(tz=TIMEZONE) - Cache.get_update_time(url)

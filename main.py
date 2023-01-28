@@ -1,17 +1,17 @@
+from psutil import net_if_addrs
+from platform import system
+from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
+from traceback import format_exception
+from time import sleep
+from logging import getLogger
+from dashboard import Dashboard
+from configs import logger_init
+from aiorequests import requests
 VERSION = "Release 1.1"
 
-from aiorequests import requests
-from configs import logger_init
-from dashboard import Dashboard
-from logging import getLogger
-from time import sleep
-from traceback import format_exception
-
-from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
-from platform import system
-from psutil import net_if_addrs
 
 MAIN_LOGGER = getLogger("main")
+
 
 async def check_update() -> None:
     MAIN_LOGGER.info("開始檢查更新...")
@@ -25,7 +25,8 @@ async def check_update() -> None:
         update_content = await requests("https://raw.githubusercontent.com/AloneAlongLife/MyselfAnimeDownloader_WebUI/master/LatestUpdate.md")
         MAIN_LOGGER.warning(f"檢查到更新版本: {latest_version}")
         MAIN_LOGGER.warning(f"檢查到更新內容:\n{update_content.decode()}")
-        MAIN_LOGGER.warning("更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")
+        MAIN_LOGGER.warning(
+            "更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")
     except Exception as exc:
         exc_text = "".join(format_exception(exc))
         MAIN_LOGGER.warning(f"檢查更新失敗，原因: {exc_text}")

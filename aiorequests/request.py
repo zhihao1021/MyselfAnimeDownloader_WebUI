@@ -17,9 +17,10 @@ HEADERS = {
 }
 LOGGER = getLogger("main")
 
+
 def new_session(
-    headers: Optional[dict]=None,
-    cookies: Optional[dict[str, str]]=None
+    headers: Optional[dict] = None,
+    cookies: Optional[dict[str, str]] = None
 ):
     return ClientSession(
         headers=headers if headers != None else HEADERS.copy(),
@@ -27,24 +28,25 @@ def new_session(
         cookies=cookies,
     )
 
+
 async def requests(
     url: str,
-    client: Optional[ClientSession]=None,
+    client: Optional[ClientSession] = None,
     *,
-    data: Any=None,
-    method: Literal["GET", "POST", "HEAD"]="GET",
-    headers: Optional[dict]=None,
-    cookies: Optional[dict[str, str]]=None,
-    raw: bool=False,
-    soup: bool=False,
-    json: bool=False,
-    from_cache: bool=False,
-    save_cache: bool=False,
-    cache_delta: Optional[timedelta]=None,
-    timeout: Optional[float]=None,
+    data: Any = None,
+    method: Literal["GET", "POST", "HEAD"] = "GET",
+    headers: Optional[dict] = None,
+    cookies: Optional[dict[str, str]] = None,
+    raw: bool = False,
+    soup: bool = False,
+    json: bool = False,
+    from_cache: bool = False,
+    save_cache: bool = False,
+    cache_delta: Optional[timedelta] = None,
+    timeout: Optional[float] = None,
     allow_redirects: bool = True,
     max_redirects: int = 10,
-    raise_exception: bool=False
+    raise_exception: bool = False
 ) -> Optional[Union[bytes, CIMultiDictProxy, ClientResponse, BeautifulSoup]]:
     """
     非同步請求。
@@ -63,7 +65,7 @@ async def requests(
     :param allow_redirects: :class:`bool`使否允許重新導向。
     :param max_redirects: :class:`int`最大重新導向次數。
     :param raise_exception: :class:`bool`發生錯誤時是否回傳。
-    
+
     :return: :class:`Optional[Union[bytes, CIMultiDictProxy, ClientResponse, BeautifulSoup]]`
     """
     try:
@@ -94,11 +96,12 @@ async def requests(
             elif json:
                 return Json.loads(await Cache.read_cache(url))
             return await Cache.read_cache(url)
-        
+
         # 檢查是否需要開新連線
         need_close = False if client else True
-        client = client if client else new_session(headers=headers, cookies=cookies)
-        
+        client = client if client else new_session(
+            headers=headers, cookies=cookies)
+
         kwargs = {
             "url": url,
             "allow_redirects": allow_redirects,
@@ -114,7 +117,7 @@ async def requests(
             kwargs["data"] = data
         else:
             __request = client.get
-        
+
         # 檢查是否需要新增標頭
         if headers != None:
             kwargs["headers"] = headers
@@ -124,10 +127,10 @@ async def requests(
         # 檢查Timeout
         if timeout != None:
             kwargs["timeout"] = ClientTimeout(connect=timeout)
-        
+
         # 發送請求
         res = await __request(**kwargs)
-        
+
         # 設置回傳值
         cache = None
         if raw:
@@ -145,7 +148,7 @@ async def requests(
         else:
             cache = await res.content.read()
             result = cache
-        
+
         if save_cache and cache:
             # 寫入快取
             await Cache.write_cache(url, cache)
@@ -153,7 +156,7 @@ async def requests(
         # 檢查是否需要關閉連線
         if need_close:
             await client.close()
-        
+
         # 回傳
         return result
     except Exception as exc:

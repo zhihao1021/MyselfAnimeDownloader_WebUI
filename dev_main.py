@@ -1,15 +1,14 @@
+from psutil import net_if_addrs
+from platform import system
+from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
+from traceback import format_exception
+from time import sleep
+from utils import Thread
+from dashboard import Dashboard
+from configs import *
+from aiorequests import requests
 VERSION = "Release-dev 1.0"
 
-from aiorequests import requests
-from configs import *
-from dashboard import Dashboard
-from utils import Thread
-from time import sleep
-from traceback import format_exception
-
-from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
-from platform import system
-from psutil import net_if_addrs
 
 async def check_update() -> None:
     MAIN_LOGGER.info("開始檢查更新...")
@@ -24,13 +23,15 @@ async def check_update() -> None:
         _update_content = await requests("https://raw.githubusercontent.com/AloneAlongLife/MyselfAnimeDownloader_WebUI/master/LatestUpdate.md")
         MAIN_LOGGER.warning(f"檢查到更新版本: {_latest_version}")
         MAIN_LOGGER.warning(f"檢查到更新內容:\n{_update_content.decode()}")
-        MAIN_LOGGER.warning("更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")
+        MAIN_LOGGER.warning(
+            "更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")
     except Exception as e:
         _mes = "".join(format_exception(e))
         MAIN_LOGGER.warning(f"檢查更新失敗，原因: {_mes}")
 
 if __name__ == "__main__":
-    if system() == "Windows": set_event_loop_policy(WindowsSelectorEventLoopPolicy())
+    if system() == "Windows":
+        set_event_loop_policy(WindowsSelectorEventLoopPolicy())
     MAIN_LOGGER.info(f"當前版本: {VERSION}")
 
     loop = new_event_loop()

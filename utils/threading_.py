@@ -5,17 +5,22 @@ from logging import getLogger
 
 logger = getLogger("main")
 
+
 class Thread(OThread):
     """
     可停止式線程。
     新增:
      - stop(): 強制停止線程。
     """
+
     def stop(self):
-        if not self.is_alive() or self.ident == None: raise ThreadError("The thread is not active.")
-        elif pythonapi.PyThreadState_SetAsyncExc(self.ident, py_object(SystemExit)) == 1: return
+        if not self.is_alive() or self.ident == None:
+            raise ThreadError("The thread is not active.")
+        elif pythonapi.PyThreadState_SetAsyncExc(self.ident, py_object(SystemExit)) == 1:
+            return
         pythonapi.PyThreadState_SetAsyncExc(self.ident, 0)
         raise SystemError("PyThreadState_SetAsyncExc failed")
+
 
 def __auto_kill():
     while main_thread().is_alive():
@@ -30,10 +35,12 @@ def __auto_kill():
                 else:
                     if not thread.is_alive() or thread.ident == None:
                         continue
-                    pythonapi.PyThreadState_SetAsyncExc(thread.ident, py_object(SystemExit))
+                    pythonapi.PyThreadState_SetAsyncExc(
+                        thread.ident, py_object(SystemExit))
                 thread.join()
     logger.warning("All threads were stopped.")
     current_thread().stop()
+
 
 __auto_kill_thread = Thread(target=__auto_kill, name="AutoKillThread")
 __auto_kill_thread.start()
