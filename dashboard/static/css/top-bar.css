@@ -1,0 +1,141 @@
+#top-bar {
+    position: absolute;
+    display: flex;
+    justify-items: left;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 72px;
+    background-color: rgb(var(--secondground-color));
+    box-shadow: 0px -15px 8px 16px black;
+    user-select: none;
+}
+
+/* 開頭 */
+#top-bar img {
+    height: 56px;
+    margin: auto 12px;
+    cursor: pointer;
+}
+
+/* 標題 */
+#top-bar .title {
+    color: rgb(var(--contrast-color));
+    font-family: "Caveat", cursive;
+    font-size: 42px;
+    text-emphasis: 1px;
+    margin: auto 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* 分頁 */
+#top-bar .tab {
+    height: 42px;
+    width: 36px;
+    margin: auto 4px;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    text-align: center;
+    cursor: pointer;
+    color: rgb(var(--second-color));
+    border-style: none;
+    border-width: 1px;
+    border-color: rgb(var(--contrast-color), 0);
+    border-bottom-style: solid;
+    transition: 0.2s;
+}
+#top-bar .tab p {
+    margin: auto 3px;
+    left: calc(50% - 15px);
+    text-align: center;
+    transition: 0.2s;
+}
+#top-bar .tab p:nth-of-type(2) {
+    position: relative;
+    font-size: 18px;
+    margin: auto 12px auto 0px;
+    color: rgb(var(--secondground-color), 0);
+    left: -15px;
+    pointer-events: none;
+}
+#top-bar .tab:hover {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color), 1);
+    width: auto;
+    transition: 0.6s;
+}
+#top-bar .tab:hover p {
+    left: 0px;
+    color: rgb(var(--contrast-color), 1);
+    transition: 0.6s;
+}
+
+/* 佔位空白 */
+#top-bar .empty {
+    flex: 1;
+}
+
+/* 主題切換 */
+#switch-color {
+    width: 32px;
+    line-height: 32px;
+    font-size: 22px;
+    text-align: center;
+    color: rgb(var(--second-color));
+    border-radius: 16px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(var(--second-color));
+    transition: 0.3s;
+    cursor: pointer;
+}
+#switch-color:hover {
+    background-color: rgb(var(--second-color));
+    color: rgb(var(--contrast-color));
+}
+
+#switch-q {
+    width: 32px;
+    line-height: 32px;
+    font-size: 22px;
+    text-align: center;
+    color: transparent;
+    border-radius: 16px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: transparent;
+    transition: 0.3s;
+    cursor: pointer;
+    margin: auto 12px;
+}
+#switch-q:hover {
+    border-color: rgb(var(--second-color));
+    background-color: rgb(var(--second-color));
+    color: rgb(var(--contrast-color));
+}
+
+/* 搜尋框 */
+#top-bar .search {
+    margin: auto 12px;
+    width: 220px;
+    height: 28px;
+    color: rgb(var(--second-color));
+    background-color: transparent;
+    border-style: none;
+    border-width: 1px;
+    border-color: rgb(var(--second-color));
+    border-bottom-style: solid;
+    caret-color: rgb(var(--contrast-color));
+    outline: none;
+    font-size: 18px;
+    text-indent: 0.2em;
+    transition: 0.3s;
+}
+#top-bar .search:focus {
+    color: rgb(var(--contrast-color));
+    border-color: rgb(var(--contrast-color));
+}

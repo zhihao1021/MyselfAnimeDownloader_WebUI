@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/*venv": true,
+			"**/__pycache__": true,
+			"dist": true,
+			"cache/": true,
+			"logs": true,
+			"Share": true,
+			".vscode": true,
+			"main.spec": true
+		},
+	}
+}
