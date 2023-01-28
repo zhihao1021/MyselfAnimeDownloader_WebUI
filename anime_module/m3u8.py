@@ -1,16 +1,17 @@
 from aiorequests import new_session, requests
 from configs import FFMPEG_ARGS, GLOBAL_CONFIG, TIMEZONE
+from utils import retouch_path
 
 from asyncio import CancelledError, create_task, current_task, gather, get_running_loop, Queue, sleep, Task
 from datetime import datetime
 from logging import getLogger
 from os import makedirs, rename, rmdir, stat, walk
-from os.path import abspath, join, isfile, isdir, normpath
+from os.path import abspath, join, isfile, isdir, split
 from shutil import rmtree
 from subprocess import run, DEVNULL, PIPE
 from traceback import format_exception
 from typing import Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from aiofiles import open as aopen
 from aiohttp import ClientSession
@@ -52,7 +53,10 @@ class M3U8:
         # 輸出資料夾
         self.output_dir = "download" if output_dir == None else abspath(output_dir)
         # 暫存資料夾
-        self.temp_dir = abspath(join(GLOBAL_CONFIG.temp_path, normpath(self.host)))
+        self.temp_dir = abspath(join(
+            GLOBAL_CONFIG.temp_path,
+            retouch_path(split(urlparse(self.host).path)[0]).removeprefix("/").removeprefix("\\")
+        ))
 
         # FFmpeg路徑
         self.ffmpeg_path = "ffmpeg"
@@ -353,5 +357,6 @@ class M3U8:
         return isfile(finish_file_path)
     
     def __clean_up(self) -> None:
-        rmtree(self.temp_dir)
+        if isdir(self.temp_dir):
+            rmtree(self.temp_dir)
         recursion_delete_dir("temp")

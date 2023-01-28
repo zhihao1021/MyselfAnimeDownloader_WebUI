@@ -1,6 +1,6 @@
 from .config import LOGGING_CONFIG, MAX_LOGGER_NAME, TIMEZONE
 
-from copy import deepcopy
+from copy import copy
 from logging import Formatter, getLevelName, getLogger, LogRecord, NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL, StreamHandler
 from os import fspath, listdir, makedirs, remove, rename
 from os.path import abspath, exists, isdir, isfile, join, split, splitext
@@ -38,8 +38,8 @@ class C_Formatter(Formatter):
         return style(text=level_name, fg=LEVEL_NAME_COLORS.get(level_no))
 
     def format(self, record: LogRecord) -> str:
-        record = deepcopy(record)
-        if "color_message" in record.__dict__:
+        record = copy(record)
+        if "color_message" in record.__dict__ and self.use_color:
             record.msg = record.__dict__["color_message"]
             record.__dict__["message"] = record.getMessage()
         message = record.getMessage()
@@ -74,7 +74,7 @@ class C_UvicornAccessFormatter(C_Formatter):
         )
     
     def format(self, record: LogRecord) -> str:
-        record = deepcopy(record)
+        record = copy(record)
         client_addr, method, full_path, http_version, status_code = record.args
         request_line = "%s %s HTTP/%s" % (method, full_path, http_version)
         request_line = style(text=request_line, bold=True) if self.use_color else request_line

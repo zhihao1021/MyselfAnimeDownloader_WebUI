@@ -12,6 +12,20 @@ function onload() {
     set_color();
 }
 
+function postJSON (url, data, callback=null) {
+    if (typeof data === "object") {
+        data = JSON.stringify(data);
+    }
+    $.ajax({
+        url: url,
+        type: "POST",
+        contentType:"application/json; charset=utf-8",
+        dataType: "json",
+        data: data,
+        success: callback
+    });
+};
+
 // 切換頁面
 function hash_change() {
     let hash = location.hash.slice(1), finded=false;
@@ -155,7 +169,7 @@ function restore_custom() {
 // 搜尋
 function search(keyword, from_cache=true) {
     last_keyword = keyword;
-    $.post("/api/search", {"keyword": keyword, "from_cache": from_cache}, (result)=>{
+    postJSON("/api/search", {"keyword": keyword, "from-cache": from_cache}, (result)=>{
         if (result.type == "anime") {
             // 回傳動畫
             update_anime(result.data);

@@ -11,7 +11,7 @@ from aiofiles import open as aopen
 
 def url2cache_path(url: str) -> tuple[str, str]:
     """
-    :return: filename, filepath
+    :return: dirpath, filepath
     """
     res = urlsplit(url)
     loc = retouch_name(res.netloc)

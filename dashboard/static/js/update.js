@@ -66,7 +66,7 @@ function no_cache_reload() {
 }
 
 function get_week_anime(from_cache=true) {
-    $.post("/api/get-week-anime", {"from_cache": from_cache}, (data)=>{
+    let callback = (data)=>{
         let week_ele = document.querySelectorAll("#update .week-day");
         let week_day = new Date().getDay();
         week_update_day = week_day;
@@ -99,11 +99,11 @@ function get_week_anime(from_cache=true) {
 
                 let ele = document.createElement("div");
                 ele.classList.add("ani-block");
-                ele.url = anime.URL;
                 ele.onclick = function () {
                     search(this.url);
                     _last_page = 4;
                 }
+                ele.url = anime.URL;
 
                 let title = document.createElement("p");
                 title.classList.add("title")
@@ -125,11 +125,12 @@ function get_week_anime(from_cache=true) {
                 }
             })
         });
-    })
+    };
+    postJSON("/api/get-week-anime", {"from-cache": from_cache}, callback);
 }
 
 function get_year_anime(from_cache=true) {
-    $.post("/api/get-year-anime", {"from_cache": from_cache}, (data)=>{
+    let callback = (data)=>{
         let keys = Object.keys(data).reverse();
         let page = document.querySelector("#update-year");
 
@@ -173,11 +174,13 @@ function get_year_anime(from_cache=true) {
             season_block.appendChild(animes);
             page.appendChild(season_block);
         });
-    })
+    };
+    postJSON("/api/get-year-anime", {"from-cache": from_cache}, callback);
 }
 
 function get_finish_anime(from_cache=true, page_index=1) {
-    $.post("/api/get-finish-anime", {"from_cache": from_cache, "page_index": page_index}, (data)=>{
+    let callback = (data)=>{
+        console.log(page_index)
         if (document.querySelector("#update-finish .loading-box").style.display == "none") {
             document.querySelector("#update-finish .loading-box").style.display = "";
         }
@@ -199,7 +202,7 @@ function get_finish_anime(from_cache=true, page_index=1) {
             }
 
             let img = document.createElement("img");
-            img.src = `/image_cache?url=${anime.IMAGE_URL}`;
+            img.src = `/image-cache?url=${anime.IMAGE_URL}`;
 
             let p = document.createElement("p");
             p.textContent = anime.NAME;
@@ -211,11 +214,11 @@ function get_finish_anime(from_cache=true, page_index=1) {
             page.appendChild(anime_box);
         });
         if (data.length != 0) {
-            page_index++;
-            setTimeout(get_finish_anime, 200, true, page_index);
+            get_finish_anime(from_cache, page_index+1);
         }
         else {
             document.querySelector("#update-finish .loading-box").style.display = "none";
         }
-    })
+    };
+    postJSON("/api/get-finish-anime", {"page-index": page_index, "from-cache": from_cache}, callback);
 }

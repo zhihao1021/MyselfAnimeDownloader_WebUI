@@ -42,7 +42,7 @@ class MyselfAnime(ValidAssignmentModel):
     
     @validator("ANI_NAME", "EPS_NAME")
     def eps_name_validator(cls, value: str):
-        return normalize(UNICODE_CODE, value)
+        return normalize(UNICODE_CODE, retouch_name(value))
     
     @validator("*")
     def all_validator(cls, value: str):
@@ -219,6 +219,7 @@ class Myself:
         client = client if client else new_session()
         while True:
             try:
+                MYSELF_LOGGER.info(f"Weekly Update: update:{update} from-cache:{from_cache}")
                 # 取得網頁
                 soup = await requests(
                     url=urljoin(MYSELF_URL, "portal.php"),
@@ -286,6 +287,7 @@ class Myself:
         client = client if client else new_session()
         while True:
             try:
+                MYSELF_LOGGER.info(f"Year List: update:{update} from-cache:{from_cache}")
                 # 取得網頁
                 soup = await requests(
                     url=urljoin(MYSELF_URL, "portal.php?mod=topic&topicid=8"),
@@ -338,9 +340,9 @@ class Myself:
                     await client.close()
                 # 回傳
                 return result
-            except Exception as _exc:
-                _exc_text = "".join(format_exception(_exc))
-                MYSELF_LOGGER.error(_exc_text)
+            except Exception as exc:
+                exc_text = "".join(format_exception( exc))
+                MYSELF_LOGGER.error(exc_text)
                 await asleep(5)
     
     @staticmethod
@@ -368,6 +370,7 @@ class Myself:
         page_num = max(1, int(page_num))
         while True:
             try:
+                MYSELF_LOGGER.info(f"Finish List: start-page:{start_page} page-num:{page_num} update:{update} from-cache:{from_cache}")
                 # 取得網頁
                 soup = await requests(
                     url=urljoin(MYSELF_URL, "forum-113-1.html"),
@@ -437,9 +440,9 @@ class Myself:
                     await client.close()
                 # 回傳
                 return result
-            except Exception as _exc:
-                _exc_text = "".join(format_exception(_exc))
-                MYSELF_LOGGER.error(_exc_text)
+            except Exception as exc:
+                exc_text = "".join(format_exception( exc))
+                MYSELF_LOGGER.error(exc_text)
                 await asleep(5)
 
     @staticmethod
@@ -477,6 +480,7 @@ class Myself:
         ]
         while True:
             try:
+                MYSELF_LOGGER.info(f"Search: keyword:{keyword} start-page:{start_page} page-num:{page_num} update:{update} from-cache:{from_cache}")
                 redirect_url = (await requests(
                     url=urljoin(MYSELF_URL, f"/search.php?{urlencode(__query_list)}"),
                     client=client,
@@ -546,7 +550,7 @@ class Myself:
                 await gather(*tasks)
                 if need_close: await client.close()
                 return result
-            except Exception as _exc:
-                _exc_text = "".join(format_exception(_exc))
-                MYSELF_LOGGER.error(_exc_text)
+            except Exception as exc:
+                exc_text = "".join(format_exception( exc))
+                MYSELF_LOGGER.error(exc_text)
                 await asleep(5)

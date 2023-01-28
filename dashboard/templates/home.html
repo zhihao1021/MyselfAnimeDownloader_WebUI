@@ -18,8 +18,5 @@
 
 </div>
 <script>
-    setInterval(()=>{
-        try {$.getJSON("/api/download-queue", "", fetch_queue);}
-        catch {}
-    }, 1500);
+    fetch_queue();
 </script>
