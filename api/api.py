@@ -7,16 +7,11 @@ from pydantic import BaseModel, Field, validator
 from typing import Literal
 
 
-class OrmModeModel(BaseModel):
-    class Config:
-        orm_mode = True
-
-
-class CacheData(OrmModeModel):
+class CacheData(BaseModel):
     from_cache: bool = Field(True, alias="from-cache")
 
 
-class QueueModifyData(OrmModeModel):
+class QueueModifyData(BaseModel):
     modify: Literal["pause", "resume", "stop",
                     "upper", "lower", "highest", "lowest"]
     downloader_id: str = Field(alias="downloader-id")
@@ -26,7 +21,7 @@ class SearchData(CacheData):
     keyword: str
 
 
-class DownloadData(OrmModeModel):
+class DownloadData(BaseModel):
     episodes: list[MyselfAnime]
 
 
