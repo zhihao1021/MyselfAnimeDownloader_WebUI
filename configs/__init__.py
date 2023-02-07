@@ -1,2 +1,2 @@
 from .config import *
-from .logging import *
+from .logging import logger_init

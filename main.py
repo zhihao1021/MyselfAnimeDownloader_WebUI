@@ -1,15 +1,13 @@
-VERSION = "Release 1.1"
+VERSION = "Release 1.2"
 
 from aiorequests import requests
 from configs import logger_init
 from dashboard import Dashboard
 from logging import getLogger
-from time import sleep
 from traceback import format_exception
 
 from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
 from platform import system
-from psutil import net_if_addrs
 
 MAIN_LOGGER = getLogger("main")
 
