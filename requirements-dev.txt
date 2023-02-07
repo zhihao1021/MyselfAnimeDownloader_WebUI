@@ -1,11 +1,10 @@
 aiofiles
 aiohttp
-aiosqlite
+# aiosqlite
 beautifulsoup4
 orjson
 psutil
 pydantic
 pyinstaller
-websockets
 fastapi
 uvicorn[standard]

@@ -134,6 +134,7 @@ debug.html
 *.mp4
 *.ts
 *.exe
-temp
+temp/
+download/
 cache/
 *.db

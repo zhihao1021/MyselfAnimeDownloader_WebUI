@@ -4,9 +4,8 @@ from copy import deepcopy
 from datetime import timedelta, timezone
 from logging import getLevelName
 from os import makedirs
-from os.path import abspath, isdir, isfile
+from os.path import abspath, isdir
 from pydantic import BaseModel, Field, validator
-from sqlite3 import connect
 from typing import Union
 
 def __recursion_update(old_dict: dict, new_dict: dict) -> dict:

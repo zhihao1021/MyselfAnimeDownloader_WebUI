@@ -1,5 +1,5 @@
 # 開發日誌
-### MyselfAnimeDownloader WebUI開發日誌，最後更新日期`2023/01/27`
+### MyselfAnimeDownloader WebUI開發日誌，最後更新日期`2023/02/07`
 > 這是我第一次寫開發日誌，如果有不清楚的地方還請見諒。
 ---
 
@@ -27,10 +27,23 @@
 
 ---
 
+## 2023/02/07
+```
+---Log---
+1. 修正requests函式例外處理Logger位置。
+2. 關閉SSL驗證，避免部分電腦發生憑證錯誤。
+3. 棄用websockets套件，改為aiohttp附帶之WebSocket。
+
+--TODO Detal---
+1. 自動檢查更新
+```
+
+---
+
 ## 2023/01/27
 ```
 ---Log---
-1. 將框架改為FastAPI
+1. 將框架改為FastAPI。
 2. 修正快取問題。
 
 ---TODO Detail---
@@ -42,7 +55,7 @@
 ## 2023/01/27
 ```
 ---Log---
-1. 資料結構改為Pydantic
+1. 資料結構改為Pydantic。
 2. 快取棄用Database紀錄修改時間，改為直接讀取檔案修改時間。
 3. 語法優化。
 4. 修改註解。

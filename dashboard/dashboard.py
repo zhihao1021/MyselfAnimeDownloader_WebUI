@@ -1,18 +1,14 @@
 from aiorequests import Cache, url2cache_path
-from anime_module import MyselfAnime
 from api import API, CacheData, DownloadData, GetFinishData, QueueModifyData, SearchData
 from configs import GLOBAL_CONFIG, MYSELF_CONFIG, WEB_CONFIG
 from swap import IMAGE_CACHE_QUEUE
 
-from asyncio import new_event_loop
 from os.path import isfile, join, split as ossplit
-from typing import Literal
 
 from aiofiles import open as aopen
-from fastapi import Body, FastAPI, Response
+from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse, ORJSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import Field
 from uvicorn import Config, Server
 
 def open_templates(filename: str):

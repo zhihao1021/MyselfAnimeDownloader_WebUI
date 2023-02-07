@@ -1,9 +1,6 @@
 ## 2023/01/27
-Release 1.1
+Release 1.2
 
-1. 將框架改為FastAPI
-2. 修正快取問題。
-3. 資料結構改為Pydantic
-4. 快取棄用Database紀錄修改時間，改為直接讀取檔案修改時間。
-5. 語法優化。
-6. 修改註解。
+1. 修正requests函式例外處理Logger位置。
+2. 關閉SSL驗證，避免部分電腦發生憑證錯誤。
+3. 棄用websockets套件，改為aiohttp附帶之WebSocket。
