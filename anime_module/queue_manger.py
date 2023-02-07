@@ -10,8 +10,9 @@ from typing import Optional
 
 from uuid import uuid1
 
+
 class VideoQueue:
-    def __init__(self, thread_num: Optional[int]=None) -> None:
+    def __init__(self, thread_num: Optional[int] = None) -> None:
         """
         下載排程器。
 
@@ -30,11 +31,12 @@ class VideoQueue:
 
         self.loop = new_event_loop()
         for _ in range(self.__thread_num):
-            self.loop.create_task(self.__manage_job(), name=f"VQ-{self.__uuid} Manger")
+            self.loop.create_task(self.__manage_job(),
+                                  name=f"VQ-{self.__uuid} Manger")
 
-        
-        Thread(target=self.__thread_job, name=f"VideoQueue-{self.__uuid}").start()
-    
+        Thread(target=self.__thread_job,
+               name=f"VideoQueue-{self.__uuid}").start()
+
     def __thread_job(self):
         try:
             self.loop.run_forever()
@@ -42,17 +44,18 @@ class VideoQueue:
             for task in all_tasks(self.loop):
                 task.cancel()
             self.loop.stop()
-    
+
     async def __manage_job(self):
         while True:
             # 檢查是否有空閒中的任務
-            queue_list = tuple(filter(lambda did: did not in self.__download_list, self.__queue_list))
+            queue_list = tuple(
+                filter(lambda did: did not in self.__download_list, self.__queue_list))
             if len(queue_list) == 0:
                 await asleep(1)
                 continue
             # 取得新任務
             downloader_id = queue_list[0]
-            
+
             # 檢查下載器是否為空
             downloader = self.__downloader_dict.get(downloader_id)
             if downloader == None:
@@ -70,7 +73,7 @@ class VideoQueue:
             if downloader.finish:
                 self.__queue_list.remove(downloader_id)
                 self.loop.create_task(self.__delete_job(downloader_id))
-    
+
     async def __delete_job(self, downloader_id: str):
         """
         等待60秒後移除下載器。
@@ -98,7 +101,7 @@ class VideoQueue:
 
         self.__downloader_dict[downloader_id] = downloader
         self.__queue_list.append(downloader_id)
-    
+
     def remove(self, downloader_id: str) -> None:
         """
         移除下載排程。
@@ -117,7 +120,7 @@ class VideoQueue:
         # 清除
         self.__queue_list.remove(downloader_id)
         self.loop.create_task(self.__delete_job(downloader_id))
-    
+
     def update(self, queue_list: list[str]) -> None:
         """
         更新順序清單。
@@ -129,22 +132,23 @@ class VideoQueue:
         for downloader_id in filter(lambda did: did in self.__queue_list, queue_list):
             new_queue_list.append(downloader_id)
         # 新增未被移動的ID
-        new_queue_list += list(filter(lambda did: did not in self.__queue_list, queue_list))
+        new_queue_list += list(
+            filter(lambda did: did not in self.__queue_list, queue_list))
         self.__queue_list = new_queue_list
         self.__after_update()
-    
+
     def get_queue(self) -> list[str]:
         """
         取得排程。
         """
         return deepcopy(self.__queue_list)
-    
+
     def get_data(self) -> dict[str, M3U8]:
         """
         取得所有資料。
         """
         return self.__downloader_dict
-    
+
     def get_downloader(self, downloader_id: str) -> Optional[M3U8]:
         """
         取得下載器。
@@ -152,13 +156,13 @@ class VideoQueue:
         :param downloader_id: :class:`str`下載器ID。
         """
         return self.__downloader_dict.get(downloader_id)
-    
+
     def get_index(self, downloader_id: str) -> int:
         try:
             return self.__queue_list.index(downloader_id)
         except ValueError:
             return -1
-    
+
     def upper(self, downloader_id: str):
         """
         將排程向上提一位。
@@ -172,10 +176,11 @@ class VideoQueue:
         if index == 0:
             return
 
-        self.__queue_list[index], self.__queue_list[index-1] = self.__queue_list[index-1], self.__queue_list[index]
+        self.__queue_list[index], self.__queue_list[index -
+                                                    1] = self.__queue_list[index-1], self.__queue_list[index]
 
         self.__after_update()
-    
+
     def lower(self, downloader_id: str):
         """
         將排程向下移一位。
@@ -189,9 +194,11 @@ class VideoQueue:
         if index == len(self.__queue_list) - 1:
             return
 
-        self.__queue_list[index], self.__queue_list[index+1] = self.__queue_list[index+1], self.__queue_list[index]
+        self.__queue_list[index], self.__queue_list[index +
+                                                    1] = self.__queue_list[index+1], self.__queue_list[index]
 
         self.__after_update()
+
 
 class ImageCacheQueue:
     def __init__(self, connect_num: int) -> None:
@@ -206,9 +213,10 @@ class ImageCacheQueue:
         self.loop = new_event_loop()
         for _ in range(connect_num):
             self.loop.create_task(self.__downloader())
-        
-        Thread(target=self.__thread_job, name=f"ImageCacheQueue-{self.__uuid}").start()
-    
+
+        Thread(target=self.__thread_job,
+               name=f"ImageCacheQueue-{self.__uuid}").start()
+
     def __thread_job(self):
         try:
             self.loop.run_forever()
@@ -216,13 +224,13 @@ class ImageCacheQueue:
             for task in all_tasks(self.loop):
                 task.cancel()
             self.loop.stop()
-    
+
     async def add(self, url: str):
         await self.__image_queue.put(url)
-    
+
     def add_nowait(self, url: str):
         self.__image_queue.put_nowait(url)
-    
+
     async def __downloader(self):
         while True:
             # 檢查是否有空閒中的任務

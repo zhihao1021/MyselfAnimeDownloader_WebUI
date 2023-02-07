@@ -10,6 +10,7 @@ BAN_PATH_TABLE = {
     for i in b":*?\"<>|" + bytes(range(32))
 }
 
+
 def retouch_name(name: Union[str, bytes]) -> Union[str, bytes]:
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
@@ -22,6 +23,7 @@ def retouch_name(name: Union[str, bytes]) -> Union[str, bytes]:
     if type(name) == str:
         return name.translate(BAN_TABLE).strip()
     return name.decode().translate(BAN_TABLE).strip().encode()
+
 
 def retouch_path(path: Union[str, bytes]) -> Union[str, bytes]:
     """
