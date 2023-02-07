@@ -11,6 +11,7 @@ from platform import system
 
 MAIN_LOGGER = getLogger("main")
 
+
 async def check_update() -> None:
     MAIN_LOGGER.info("開始檢查更新...")
     try:
@@ -23,7 +24,8 @@ async def check_update() -> None:
         update_content = await requests("https://raw.githubusercontent.com/AloneAlongLife/MyselfAnimeDownloader_WebUI/master/LatestUpdate.md")
         MAIN_LOGGER.warning(f"檢查到更新版本: {latest_version}")
         MAIN_LOGGER.warning(f"檢查到更新內容:\n{update_content.decode()}")
-        MAIN_LOGGER.warning("更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")
+        MAIN_LOGGER.warning(
+            "更新下載連結: https://github.com/AloneAlongLife/TixCraft-Dev/releases/latest")
     except Exception as exc:
         exc_text = "".join(format_exception(exc))
         MAIN_LOGGER.warning(f"檢查更新失敗，原因: {exc_text}")

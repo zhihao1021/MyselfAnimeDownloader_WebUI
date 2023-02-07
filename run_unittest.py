@@ -5,10 +5,11 @@ from platform import system
 from unittest import TestSuite, TestLoader, TextTestRunner
 
 if __name__ == "__main__":
-    if system() == "Windows": set_event_loop_policy(WindowsSelectorEventLoopPolicy())
+    if system() == "Windows":
+        set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
     test_suit = TestSuite()
-    
+
     # myself.py
     test_suit.addTest(TestLoader().loadTestsFromTestCase(MyselfTestCase))
     test_suit.addTest(TestLoader().loadTestsFromTestCase(MyselfTestCase_Async))

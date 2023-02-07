@@ -19,8 +19,10 @@ class SearchData(CacheData):
 class DownloadData(BaseModel):
     episodes: list[MyselfAnime]
 
+
 class GetFinishData(CacheData):
-    page_index: int=Field(alias="page-index")
+    page_index: int = Field(alias="page-index")
+
 
 class API:
     @staticmethod
@@ -67,7 +69,7 @@ class API:
             for downloader_id, downloader in VIDEO_QUEUE.get_data().items()
         }
         return result
-    
+
     @staticmethod
     async def search(keyword: str, from_cache=True):
         if MYSELF_URL in keyword:
@@ -93,7 +95,7 @@ class API:
             "type": "search",
             "data": list(map(lambda anime_table: anime_table.dict(), search_result))
         }
-    
+
     @staticmethod
     async def download(episodes: list[MyselfAnime]):
         tasks = [
@@ -107,27 +109,27 @@ class API:
         return None
 
     @staticmethod
-    async def get_week_anime(from_cache: bool=True):
+    async def get_week_anime(from_cache: bool = True):
         week_list = await Myself.weekly_update(from_cache=from_cache)
         result = list(map(
-            lambda day_data: list(map(lambda day_data: (day_data[0].dict(), day_data[1]), day_data)),
+            lambda day_data: list(map(lambda day_data: (
+                day_data[0].dict(), day_data[1]), day_data)),
             week_list
         ))
         return result
 
     @staticmethod
-    async def get_year_anime(from_cache: bool=True):
+    async def get_year_anime(from_cache: bool = True):
         year_dict = await Myself.year_list(from_cache=from_cache)
         result = {
             key: list(map(lambda anime_table: anime_table.dict(), value))
             for key, value in year_dict.items()
         }
         return result
-    
+
     @staticmethod
-    async def get_finish_anime(page_index: int, from_cache: bool=True):
+    async def get_finish_anime(page_index: int, from_cache: bool = True):
         finish_list = await Myself.finish_list(from_cache=from_cache, start_page=page_index, page_num=1)
         result = list(map(lambda anime_table: anime_table.dict(), finish_list))
-        
+
         return result
-    

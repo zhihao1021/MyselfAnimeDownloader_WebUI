@@ -11,12 +11,15 @@ from fastapi.responses import FileResponse, HTMLResponse, ORJSONResponse, Redire
 from fastapi.staticfiles import StaticFiles
 from uvicorn import Config, Server
 
+
 def open_templates(filename: str):
     return join("dashboard/templates", filename)
+
 
 class Dashboard:
     app = FastAPI(title=__name__)
     app.mount("/static", StaticFiles(directory="dashboard/static"), name="static")
+
     def __init__(self) -> None:
         self.config = Config(
             app=self.app,
@@ -33,7 +36,7 @@ class Dashboard:
     async def root():
         async with aopen(open_templates("index.html"), mode="rb") as file:
             return await file.read()
-    
+
     # Include HTML
     @app.get("/include-html/{filename}", response_class=HTMLResponse)
     async def include_html(filename: str):
@@ -42,7 +45,7 @@ class Dashboard:
             return "", 404
         async with aopen(file_path, mode="rb") as file:
             return await file.read()
-    
+
     # Image Cache
     @app.get("/image-cache")
     async def image_cache(url: str):
@@ -52,7 +55,7 @@ class Dashboard:
             return FileResponse(filepath, filename=filename, content_disposition_type="inline")
         await IMAGE_CACHE_QUEUE.add(url)
         return RedirectResponse(url)
-    
+
     # 對貯列進行操作
     @app.post("/api/queue-modify")
     def api_queue_modify(data: QueueModifyData):
@@ -62,12 +65,12 @@ class Dashboard:
             downloader_id=data.downloader_id
         )
         return "", 200
-    
+
     # 取得貯列
     @app.get("/api/download-queue", response_class=ORJSONResponse)
     def api_download_queue():
         return API.download_queue()
-    
+
     # 搜尋
     @app.post("/api/search", response_class=ORJSONResponse)
     async def api_search(data: SearchData):
@@ -81,7 +84,7 @@ class Dashboard:
     async def api_download(data: DownloadData):
         await API.download(episodes=data.episodes)
         return "", 200
-    
+
     # 取得設定
     @app.get("/api/get-setting", response_class=ORJSONResponse)
     def api_get_setting():
@@ -96,7 +99,7 @@ class Dashboard:
             "myself-update": MYSELF_CONFIG.check_update
         }
         return result
-    
+
     """
     # 更新設定
     @app.route("/api/send-setting", methods=["POST", "GET"])
@@ -120,17 +123,17 @@ class Dashboard:
         Json.dump("config.json", CONFIG)
         return "", 200
     """
-    
+
     # 取得每周更新列表
     @app.post("/api/get-week-anime", response_class=ORJSONResponse)
     async def get_week_anime(data: CacheData):
         return await API.get_week_anime(from_cache=data.from_cache)
-    
+
     # 取得動畫年表
     @app.post("/api/get-year-anime", response_class=ORJSONResponse)
     async def get_year_anime(data: CacheData):
         return await API.get_year_anime(from_cache=data.from_cache)
-    
+
     # 取得完結動畫列表
     @app.post("/api/get-finish-anime", response_class=ORJSONResponse)
     async def get_finish_anime(data: GetFinishData):
