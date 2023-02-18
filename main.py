@@ -41,18 +41,3 @@ if __name__ == "__main__":
 
     dashboard = Dashboard()
     dashboard.run()
-
-    # if WEB_HOST == "0.0.0.0":
-    #     MAIN_LOGGER.info(f"Start At: 127.0.0.1:{WEB_PORT}")
-    #     for net in net_if_addrs().values():
-    #         for sni in net:
-    #             if sni.netmask == "255.255.255.0":
-    #                 MAIN_LOGGER.info(f"Start At: {sni.address}:{WEB_PORT}")
-    # else:
-    #     MAIN_LOGGER.info(f"Start At: {WEB_HOST}:{WEB_PORT}")
-
-    # while True:
-    #     try:
-    #         sleep(1)
-    #     except KeyboardInterrupt:
-    #         exit()
