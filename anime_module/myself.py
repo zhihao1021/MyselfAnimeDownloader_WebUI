@@ -17,7 +17,6 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 from html import unescape
 from pydantic import BaseModel, Field, validator
-from websockets.client import connect as ws_connect, WebSocketClientProtocol
 
 STRIP = " \"\n\r"
 UNICODE_CODE = "NFKC"
