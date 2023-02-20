@@ -92,7 +92,7 @@ class MyselfAnime(ValidAssignmentModel):
         """
         取得M3U8下載器。
         """
-        def translate(string): return string.replace(
+        def translate(string: str): return string.replace(
             "$NAME", self.ANI_NAME).replace("$EPS", self.EPS_NAME)
         m3u8_host, m3u8_file = await self.get_m3u8_url()
         output_name = translate(MYSELF_CONFIG.file_name)
@@ -132,6 +132,11 @@ class MyselfAnimeTable(ValidAssignmentModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TID = self.URL.split("/")[-1].split("-")[1]
+
+    @validator("URL")
+    def url_validator(cls, value: str):
+        value = value.strip(STRIP)
+        return f"https://myself-bbs.com/thread-{value}-1-1.html" if value.isdigit() else value
 
     @validator("NAME")
     def name_validator(cls, value: str):

@@ -6,15 +6,20 @@ from asyncio import gather, create_task
 from pydantic import BaseModel, Field
 from typing import Literal
 
+
 class CacheData(BaseModel):
-    from_cache: bool=Field(True, alias="from-cache")
+    from_cache: bool = Field(True, alias="from-cache")
+
 
 class QueueModifyData(BaseModel):
-    modify: Literal["pause", "resume", "stop", "upper", "lower", "highest", "lowest"]
-    downloader_id: str=Field(alias="downloader-id")
+    modify: Literal["pause", "resume", "stop",
+                    "upper", "lower", "highest", "lowest"]
+    downloader_id: str = Field(alias="downloader-id")
+
 
 class SearchData(CacheData):
     keyword: str
+
 
 class DownloadData(BaseModel):
     episodes: list[MyselfAnime]
@@ -22,6 +27,20 @@ class DownloadData(BaseModel):
 
 class GetFinishData(CacheData):
     page_index: int = Field(alias="page-index")
+
+
+class SettingUpdateData(BaseModel):
+    user_agent: str = Field(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 OPR/92.0.0.0 (Edition GX-CN)",
+        alias="ua",
+    )
+    conections: int = Field(10, ge=1, alias="cons")
+    worker: int = Field(3, ge=1, alias="thrs")
+    temp_path: str = Field("temp", alias="temp-path")
+    myself_dir: str = Field("[Myself]$NAME", alias="myself-dir")
+    myself_download: str = Field("download/myself", alias="myself-download")
+    myself_file: str = Field("[Myself]$NAME $EPS", alias="myself-file")
+    myself_update: int = Field(5, ge=0, alias="myself-update")
 
 
 class API:

@@ -24,8 +24,8 @@ def __recursion_update(old_dict: dict, new_dict: dict) -> dict:
 
 
 def path_validator(path: str):
-    if not isdir(path := abspath(path)):
-        makedirs(path)
+    if not isdir(abs_path := abspath(path)):
+        makedirs(abs_path)
     return path
 
 # CRITICAL
@@ -76,6 +76,9 @@ class GlobalConfig(BaseModel):
     @validator("temp_path")
     def path_validator(cls, value):
         return path_validator(value)
+    
+    class Config:
+        validate_assignment = True
 
 
 class MyselfConfig(BaseModel):
@@ -88,6 +91,9 @@ class MyselfConfig(BaseModel):
     @validator("download_path")
     def path_validator(cls, value):
         return path_validator(value)
+    
+    class Config:
+        validate_assignment = True
 
 
 EXAMPLE_CONFIG: dict[str, Union[dict, str, int]] = {

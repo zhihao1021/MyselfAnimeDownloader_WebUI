@@ -1,1 +1,1 @@
-from .api import CacheData, QueueModifyData, SearchData, DownloadData, GetFinishData, API
+from .api import CacheData, QueueModifyData, SearchData, SettingUpdateData, DownloadData, GetFinishData, API

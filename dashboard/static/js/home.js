@@ -18,6 +18,10 @@ function gen_queue(id) {
 
 // 抓取資料
 function fetch_queue() {
+    let ws = new WebSocket(`ws://${location.host}/ws/download-queue`);
+    ws.onmessage = (event)=>{
+        callback(JSON.parse(event.data));
+    }
     let callback = (json_data)=>{
         let keys = Object.keys(json_data);
         document.querySelectorAll("div.queue .progress-bar").forEach((element)=>{
@@ -85,9 +89,7 @@ function fetch_queue() {
             target.querySelector(".progress").textContent = `${(progress * 100).toFixed(1)}%`;
             target.querySelector(".progress").style.setProperty("--proc", progress * 100);
         })
-        setTimeout(fetch_queue, 900);
     };
-    $.getJSON("/api/download-queue", "", callback);
 }
 
 function _modify(ele, event) {

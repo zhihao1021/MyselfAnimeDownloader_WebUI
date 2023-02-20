@@ -1,14 +1,22 @@
-VERSION = "Release 1.2"
 
-from aiorequests import requests
-from configs import logger_init
+from aiorequests import requests, new_session
+from anime_module import MyselfAnimeTable
 from dashboard import Dashboard
+from configs import logger_init, MYSELF_CONFIG
+from swap import VIDEO_QUEUE
+from utils import Thread
+
+from asyncio import (all_tasks, CancelledError, create_task, gather, set_event_loop_policy,
+                     sleep as asleep, WindowsSelectorEventLoopPolicy, new_event_loop)
 from logging import getLogger
-from traceback import format_exception
-
-from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy, new_event_loop
+from os.path import isfile
 from platform import system
+from traceback import format_exception
+from typing import Iterable
 
+from aiofiles import open as aopen
+
+VERSION = "Release 1.2"
 MAIN_LOGGER = getLogger("main")
 
 
@@ -30,6 +38,62 @@ async def check_update() -> None:
         exc_text = "".join(format_exception(exc))
         MAIN_LOGGER.warning(f"檢查更新失敗，原因: {exc_text}")
 
+
+def __thread_job():
+    loop = new_event_loop()
+    try:
+        loop.create_task(check_myself_update())
+        loop.run_forever()
+    except SystemExit:
+        for task in all_tasks(loop):
+            task.cancel()
+        loop.stop()
+        loop.close()
+
+
+async def check_myself_update():
+    try:
+        latest = {}
+        client = new_session()
+        while True:
+            # 檢查sn檔是否存在
+            if not isfile("sn_list.txt"):
+                await asleep(1)
+                continue
+
+            # 讀取內容
+            MAIN_LOGGER.info("讀取SN。")
+            async with aopen("sn_list.txt") as sn_file:
+                raw_content = await sn_file.read()
+            sn_list = raw_content.strip().split("\n")
+            animes = [
+                MyselfAnimeTable(url=sn_url)
+                for sn_url in sn_list
+            ]
+            # 取得資料
+            MAIN_LOGGER.info("開始檢查動畫更新。")
+            await gather(*map(
+                lambda anime_table: create_task(
+                    anime_table.update(client=client, from_cache=False)
+                ), animes
+            ))
+
+            # 檢查更新
+            need_download: Iterable[MyselfAnimeTable] = list(filter(lambda anime_table: len(
+                anime_table.VIDEO_LIST) != latest.get(anime_table.URL, 0), animes))
+
+            # 開始下載
+            for anime_table in need_download:
+                MAIN_LOGGER.info(f"開始下載: {anime_table.NAME}。")
+                episode_num = len(anime_table.VIDEO_LIST)
+                latest[anime_table.URL] = episode_num
+                downloader = await anime_table.VIDEO_LIST[-1].gen_downloader()
+                VIDEO_QUEUE.add(downloader)
+
+            await asleep(60 * MYSELF_CONFIG.check_update)
+    except CancelledError:
+        await client.close()
+
 if __name__ == "__main__":
     if system() == "Windows":
         set_event_loop_policy(WindowsSelectorEventLoopPolicy())
@@ -38,6 +102,13 @@ if __name__ == "__main__":
 
     loop = new_event_loop()
     loop.run_until_complete(check_update())
+    loop.close()
+
+    thrad = Thread(target=__thread_job, name="Background Job")
+    thrad.start()
 
     dashboard = Dashboard()
     dashboard.run()
+
+    thrad.stop()
+    thrad.join()
