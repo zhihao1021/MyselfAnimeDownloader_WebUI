@@ -29,12 +29,6 @@ def new_session(
     )
 
 
-async def new_websocket(
-    client: Optional[ClientSession] = None
-):
-    pass
-
-
 async def requests(
     url: str,
     client: Optional[ClientSession] = None,

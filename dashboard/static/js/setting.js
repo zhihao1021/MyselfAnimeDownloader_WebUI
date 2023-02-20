@@ -15,5 +15,7 @@ function send_setting() {
         let key = ele.name;
         data[key] = ele.value;
     })
+    console.log(data);
     postJSON("/api/send-setting", data);
+    get_setting();
 }

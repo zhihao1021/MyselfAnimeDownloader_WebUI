@@ -1,12 +1,16 @@
+from .ws_manger import ConnectionManager
+
 from aiorequests import Cache, url2cache_path
-from api import API, CacheData, DownloadData, GetFinishData, QueueModifyData, SearchData
-from configs import GLOBAL_CONFIG, MYSELF_CONFIG, WEB_CONFIG
+from api import API, CacheData, DownloadData, GetFinishData, QueueModifyData, SearchData, SettingUpdateData
+from configs import CONFIG, GLOBAL_CONFIG, MYSELF_CONFIG, WEB_CONFIG
 from swap import IMAGE_CACHE_QUEUE
+from utils import Json
 
 from os.path import isfile, join, split as ossplit
 
 from aiofiles import open as aopen
-from fastapi import FastAPI
+from asyncio import sleep as asleep
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse, HTMLResponse, ORJSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from uvicorn import Config, Server
@@ -14,6 +18,9 @@ from uvicorn import Config, Server
 
 def open_templates(filename: str):
     return join("dashboard/templates", filename)
+
+
+ws_download_queue = ConnectionManager()
 
 
 class Dashboard:
@@ -31,6 +38,19 @@ class Dashboard:
 
     def run(self) -> None:
         self.server.run()
+
+    @app.websocket("/ws/download-queue")
+    async def api_download_queue(websocket: WebSocket):
+        uuid = await ws_download_queue.connect(websocket)
+        last_data = None
+        while True:
+            await asleep(1)
+            data = API.download_queue()
+            if data == last_data:
+                continue
+            last_data = data
+            if not await ws_download_queue.send(uuid, data):
+                break
 
     @app.get("/", response_class=HTMLResponse)
     async def root():
@@ -66,11 +86,6 @@ class Dashboard:
         )
         return "", 200
 
-    # 取得貯列
-    @app.get("/api/download-queue", response_class=ORJSONResponse)
-    def api_download_queue():
-        return API.download_queue()
-
     # 搜尋
     @app.post("/api/search", response_class=ORJSONResponse)
     async def api_search(data: SearchData):
@@ -100,29 +115,22 @@ class Dashboard:
         }
         return result
 
-    """
     # 更新設定
-    @app.route("/api/send-setting", methods=["POST", "GET"])
-    def api_send_setting():
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.values.to_dict()
-        CONFIG["global"].update({
-            "user-agent":  data.get("ua", UA),
-            "temp_path":  data.get("temp-path", TEMP_PATH),
-            "threads":  int(data.get("thrs", THRS)),
-            "connections":  int(data.get("cons", CONS)),
-        })
-        CONFIG["myself"].update({
-            "dir_name": data.get("myself-dir", MYSELF_DIR),
-            "file_name": data.get("myself-file", MYSELF_FILE),
-            "download_path": data.get("myself-download", MYSELF_DOWNLOAD),
-            "check_update": int(data.get("myself-update", MYSELF_UPDATE)),
-        })
-        Json.dump("config.json", CONFIG)
+    @app.post("/api/send-setting")
+    async def api_send_setting(data: SettingUpdateData):
+        GLOBAL_CONFIG.user_agent = data.user_agent
+        GLOBAL_CONFIG.temp_path = data.temp_path
+        GLOBAL_CONFIG.worker = data.worker
+        GLOBAL_CONFIG.connections = data.conections
+        MYSELF_CONFIG.dir_name = data.myself_dir
+        MYSELF_CONFIG.file_name = data.myself_file
+        MYSELF_CONFIG.download_path = data.myself_download
+        MYSELF_CONFIG.check_update = data.myself_update
+
+        CONFIG["global"] = GLOBAL_CONFIG
+        CONFIG["myself"] = MYSELF_CONFIG
+        await Json.dump("config.json", CONFIG)
         return "", 200
-    """
 
     # 取得每周更新列表
     @app.post("/api/get-week-anime", response_class=ORJSONResponse)

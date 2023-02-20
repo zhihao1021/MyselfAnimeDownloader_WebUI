@@ -180,7 +180,10 @@ function get_year_anime(from_cache=true) {
 
 function get_finish_anime(from_cache=true, page_index=1) {
     let callback = (data)=>{
-        console.log(page_index)
+        if (document.querySelector("#update-finish").style.display != "" || location.hash != "#update") {
+            setTimeout(callback, 100, data);
+            return;
+        }
         if (document.querySelector("#update-finish .loading-box").style.display == "none") {
             document.querySelector("#update-finish .loading-box").style.display = "";
         }
