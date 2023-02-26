@@ -1,6 +1,8 @@
-## 2023/01/27
-Release 1.2
+## 2023/02/20
+Release 1.3
 
-1. 修正requests函式例外處理Logger位置。
-2. 關閉SSL驗證，避免部分電腦發生憑證錯誤。
-3. 棄用websockets套件，改為aiohttp附帶之WebSocket。
+1. 下載清單的API改為使用WebSocket。
+2. 新增自動檢查更新雛形。
+3. WebUI所有完結列表部分，改為只有在顯示時才會請求資源。
+4. WebUI中，啟用設定功能。
+5. 通知氣泡完成

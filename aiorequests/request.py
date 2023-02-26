@@ -1,11 +1,10 @@
 from .cache_manger import Cache
 
-from utils import Json
+from utils import format_exception, Json
 from configs import BS_FEATURE, GLOBAL_CONFIG
 
 from datetime import timedelta
 from logging import getLogger
-from traceback import format_exception
 from typing import Any, Literal, Optional, Union
 
 from aiohttp import ClientResponse, ClientSession, ClientTimeout
