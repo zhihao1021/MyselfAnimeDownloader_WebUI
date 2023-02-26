@@ -4,7 +4,7 @@ Myself下載器，使用Web UI。下載方式部份參考至 https://github.com/
 此程式依賴於[Myself](https://myself-bbs.com/)，需網站存在才可使用。
 
 ## 當前版本
-Release 1.2
+Release 1.3
 
 1. 修正requests函式例外處理Logger位置。
 2. 關閉SSL驗證，避免部分電腦發生憑證錯誤。
@@ -47,8 +47,8 @@ Release 1.2
 5.運行程式<br>
 使用`python3 main.py`運行程式。
 
-## 開發日誌(22023/02/07)
-[查看開發日誌](UpdateLog.md/#20230207)
+## 開發日誌(22023/02/26)
+[查看開發日誌](UpdateLog.md/#20230226)
 
 ## 開發環境
 ```
