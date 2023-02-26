@@ -49,7 +49,8 @@ class ConnectionManager:
             else:
                 await ws.send_json(message)
             return True
-        except (WebSocketDisconnect, ConnectionClosed):
+        # except (WebSocketDisconnect, ConnectionClosed):
+        except:
             await self.disconnect(uuid)
             return False
 

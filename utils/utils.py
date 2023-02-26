@@ -1,3 +1,5 @@
+from sys import version_info
+from traceback import format_exception as o_format_exception
 from typing import Union
 
 BAN_TABLE = {
@@ -9,6 +11,10 @@ BAN_PATH_TABLE = {
     i: " "
     for i in b":*?\"<>|" + bytes(range(32))
 }
+
+
+def format_exception(exc: Exception):
+    return o_format_exception(type(exc), exc, exc.__traceback__) if version_info.micro < 10 else o_format_exception(exc)
 
 
 def retouch_name(name: Union[str, bytes]) -> Union[str, bytes]:

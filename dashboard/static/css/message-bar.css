@@ -1,0 +1,91 @@
+#message-bar {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+    top: 0;
+    left: 0;
+    width: 360px;
+    height: 100%;
+    background-color: transparent;
+    user-select: none;
+    pointer-events: none;
+    z-index: 1;
+}
+
+#message-bar .message-box {
+    background-color: rgb(var(--secondground-color));
+    width: calc(100% - 24px);
+    margin: 6px 12px;
+    height: auto;
+    user-select: auto;
+    pointer-events: all;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    opacity: 100%;
+    transition: opacity 0.8s linear 5.2s;
+}
+#message-bar .message-box.count-down {
+    opacity: 0%;
+}
+
+#message-bar .message-box div:first-of-type {
+    margin-left: 8px;
+}
+#message-bar .message-box div:last-of-type {
+    margin-right: 8px;
+}
+#message-bar .message-box div:nth-of-type(2) {
+    user-select: auto;
+    cursor: pointer;
+    flex: 1;
+    transition: 0.2s;
+    font-size: 18px;
+}
+#message-bar .message-box div:nth-of-type(2):hover {
+    color: rgb(var(--sec-contrast-color));
+    user-select: text;
+}
+#message-bar .message-box div {
+    height: fit-content;
+    font-size: 24px;
+    margin: 4px;
+    color: rgb(var(--contrast-color));
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+#message-bar .message-box div.close {
+    color: rgb(var(--second-color));
+    cursor: pointer;
+    margin-left: 12px;
+}
+#message-bar .message-box div.close:hover {
+    color: rgb(var(--contrast-color));
+}
+#message-bar .message-box div.warning {
+    color: yellow;
+}
+#message-bar .message-box div.info {
+    color: dodgerblue;
+}
+#message-bar .message-box div.error {
+    color: red;
+}
+
+#message-bar .message-box::after {
+    position: absolute;
+    content: "";
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 2px;
+    border-radius: 1px;
+    background-color: red;
+    transition: width 5.2s ease-in-out;
+}
+#message-bar .message-box.count-down::after {
+    width: 0%;
+}

@@ -1,6 +1,6 @@
 from aiorequests import new_session, requests
 from configs import FFMPEG_ARGS, GLOBAL_CONFIG, TIMEZONE
-from utils import retouch_path
+from utils import format_exception, retouch_path
 
 from asyncio import CancelledError, create_task, current_task, gather, get_running_loop, Queue, sleep, Task
 from datetime import datetime
@@ -9,7 +9,6 @@ from os import makedirs, rename, rmdir, stat, walk
 from os.path import abspath, join, isfile, isdir, split
 from shutil import rmtree
 from subprocess import run, DEVNULL, PIPE
-from traceback import format_exception
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
@@ -19,6 +18,8 @@ from aiohttp import ClientSession
 
 def recursion_delete_dir(dir_path: str):
     delete_num = 0
+    if not isdir(dir_path):
+        return
     for path, folder, file in walk(dir_path, topdown=False):
         if folder == [] and file == []:
             try:
@@ -87,6 +88,7 @@ class M3U8:
         """
         開始下載。
         """
+        from swap import BROADCAST_WS
         if self.started:
             return
         client = new_session(headers={
@@ -96,6 +98,10 @@ class M3U8:
         self.started = True
         self.stop_ = False
         self.__logger.info(f"M3U8: 已開始下載`{self.output_name}`。")
+        await BROADCAST_WS.broadcast({
+            "type": "info",
+            "message": f"開始下載: {self.output_name}。"
+        })
 
         # 取得m3u8檔案內容
         res = await requests(self.m3u8_file, client)
@@ -130,6 +136,10 @@ class M3U8:
 
             if "block" in res:
                 self.__logger.info(f"M3U8: 檢測到中斷，開始重新下載`{self.output_name}`。")
+                await BROADCAST_WS.broadcast({
+                    "type": "warning",
+                    "message": f"檢測到中斷，開始重新下載: {self.output_name}。"
+                })
                 self.tasks = []
                 for _file in total_file_list:
                     await ts_urls.put(_file)
@@ -137,6 +147,10 @@ class M3U8:
             elif False in map(self.__check_file_finish, total_file_list) and self.get_progress() == 1:
                 self.__logger.info(
                     f"M3U8: 檢測到文件缺失，開始重新下載`{self.output_name}`。")
+                await BROADCAST_WS.broadcast({
+                    "type": "warning",
+                    "message": f"檢測到文件缺失，開始重新下載: {self.output_name}。"
+                })
                 self.tasks = []
                 for file in total_file_list:
                     await ts_urls.put(file)
@@ -149,17 +163,29 @@ class M3U8:
         if self.__exception != None:
             self.__logger.error(
                 f"M3U8: 已取消下載`{self.output_name}`，錯誤訊息:{''.join(format_exception(self.__exception))}")
+            await BROADCAST_WS.broadcast({
+                "type": "error",
+                "message": f"已取消下載: {self.output_name}，錯誤訊息:{''.join(format_exception(self.__exception))}"
+            })
             self.started = False
             self.finish = True
             return
         # 如果被取消
         elif self.stop_ == True:
             self.__logger.warning(f"M3U8: 已被取消下載`{self.output_name}`。")
+            await BROADCAST_WS.broadcast({
+                "type": "error",
+                "message": f"已取消下載: {self.output_name}。"
+            })
             self.started = False
             self.finish = True
             return
         elif self.stop_ == None:
             self.__logger.info(f"M3U8: 已被中斷下載`{self.output_name}`。")
+            await BROADCAST_WS.broadcast({
+                "type": "error",
+                "message": f"下載被中斷: {self.output_name}。"
+            })
             self.started = False
             return
 
@@ -197,6 +223,10 @@ class M3U8:
         else:
             self.__clean_up()
         self.__logger.info(f"M3U8: 已完成下載`{self.output_name}`。")
+        await BROADCAST_WS.broadcast({
+            "type": "info",
+            "message": f"已完成下載: {self.output_name}。"
+        })
         self.finish = True
         self.started = False
 
@@ -372,6 +402,9 @@ class M3U8:
         return isfile(finish_file_path)
 
     def __clean_up(self) -> None:
-        if isdir(self.temp_dir):
-            rmtree(self.temp_dir)
-        recursion_delete_dir("temp")
+        try:
+            if isdir(self.temp_dir):
+                rmtree(self.temp_dir)
+            recursion_delete_dir("temp")
+        except:
+            self.__clean_up()

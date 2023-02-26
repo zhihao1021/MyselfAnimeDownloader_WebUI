@@ -1,28 +1,19 @@
-from asyncio import run
-
+from asyncio import create_task, gather, run, set_event_loop_policy, WindowsSelectorEventLoopPolicy
 
 async def main():
-    from aiohttp import ClientSession
-    client = ClientSession(
-        headers={
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 OPR/94.0.0.0 (Edition GX-CN)"
-        }
-    )
+    tasks = [
+        create_task(job(i))
+        for i in range(20)
+    ]
+    r = await gather(*tasks, return_exceptions=True)
+    pass_animes = filter(lambda res: not issubclass(type(res[1]), Exception), zip(range(20), r))
+    animes = map(lambda res: res[0], pass_animes)
+    print(list(animes))
 
-    ws = await client.ws_connect(
-        url="wss://v.myself-bbs.com/ws",
-        origin="https://v.myself-bbs.com",
-    )
+async def job(i):
+    if i == 10:
+        raise RuntimeError
+    return i
 
-    await ws.send_json({"tid": "", "vid": "", "id": "AgADzQsAAlRQEFc"})
-    # await ws.send_bytes(b'{"tid":"","vid":"","id":"AgADzQsAAlRQEFc"}')
-
-    print(await ws.receive_json())
-
-    await ws.close()
-
-    await client.close()
-
-
-if __name__ == "__main__":
-    run(main())
+set_event_loop_policy(WindowsSelectorEventLoopPolicy())
+run(main())

@@ -2,13 +2,12 @@ from .m3u8 import M3U8
 
 from aiorequests import new_session, Cache, requests
 from configs import MYSELF_CONFIG, MYSELF_URL
-from utils import Json, retouch_name
+from utils import format_exception, Json, retouch_name
 
 from asyncio import create_task, gather, sleep as asleep, Task
 from datetime import timedelta
 from logging import getLogger
 from os.path import join, split as split
-from traceback import format_exception
 from typing import Any, Optional, Union
 from unicodedata import normalize
 from urllib.parse import parse_qs, urlencode, urljoin

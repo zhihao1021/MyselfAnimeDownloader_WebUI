@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="../static/fonts/font.css">
         <link rel="stylesheet" href="../static/css/index.css">
         <link rel="stylesheet" href="../static/css/top-bar.css">
+        <link rel="stylesheet" href="../static/css/message-bar.css">
         <link rel="stylesheet" href="../static/css/home.css">
         <link rel="stylesheet" href="../static/css/info.css">
         <link rel="stylesheet" href="../static/css/setting.css">
@@ -19,6 +20,7 @@
         <script src="../static/js/js.cookie.min.js"></script>
         <script src="../static/js/video.min.js"></script>
         <script src="../static/js/index.js"></script>
+        <script src="../static/js/message-bar.js"></script>
         <script src="../static/js/home.js"></script>
         <script src="../static/js/info.js"></script>
         <script src="../static/js/setting.js"></script>
@@ -27,6 +29,7 @@
     </head>
     <body onhashchange="hash_change()" class="b">
         <div id="top-bar" class="b_2"></div>
+        <div id="message-bar"></div>
         <div id="home" class="page"></div>
         <div id="info" class="page"></div>
         <div id="setting" class="page"></div>
@@ -37,6 +40,7 @@
     </body>
     <script>
         $("#top-bar").load("/include-html/top-bar.html");
+        $("#message-bar").load("/include-html/message-bar.html");
         document.querySelectorAll(".page").forEach((element)=>{
             $(element).load(`/include-html/${element.id}.html`);
         })

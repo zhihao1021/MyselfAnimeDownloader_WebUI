@@ -4,19 +4,18 @@ from anime_module import MyselfAnimeTable
 from dashboard import Dashboard
 from configs import logger_init, MYSELF_CONFIG
 from swap import VIDEO_QUEUE
-from utils import Thread
+from utils import format_exception, Thread
 
 from asyncio import (all_tasks, CancelledError, create_task, gather, set_event_loop_policy,
                      sleep as asleep, WindowsSelectorEventLoopPolicy, new_event_loop)
 from logging import getLogger
 from os.path import isfile
 from platform import system
-from traceback import format_exception
 from typing import Iterable
 
 from aiofiles import open as aopen
 
-VERSION = "Release 1.2"
+VERSION = "Release 1.3"
 MAIN_LOGGER = getLogger("main")
 
 
@@ -57,26 +56,29 @@ async def check_myself_update():
         client = new_session()
         while True:
             # 檢查sn檔是否存在
-            if not isfile("sn_list.txt"):
+            if not isfile("update-list.txt"):
                 await asleep(1)
                 continue
 
             # 讀取內容
-            MAIN_LOGGER.info("讀取SN。")
-            async with aopen("sn_list.txt") as sn_file:
+            MAIN_LOGGER.info("讀取更新列表。")
+            async with aopen("update-list.txt") as sn_file:
                 raw_content = await sn_file.read()
             sn_list = raw_content.strip().split("\n")
+            sn_list = map(lambda sn_str: sn_str.split("#", 1)[0].strip(), sn_list)
             animes = [
                 MyselfAnimeTable(url=sn_url)
-                for sn_url in sn_list
+                for sn_url in filter(lambda sn_str: sn_str, sn_list)
             ]
             # 取得資料
             MAIN_LOGGER.info("開始檢查動畫更新。")
-            await gather(*map(
+            result = await gather(*map(
                 lambda anime_table: create_task(
                     anime_table.update(client=client, from_cache=False)
                 ), animes
-            ))
+            ), return_exceptions=True)
+            pass_animes = filter(lambda res: not issubclass(type(res[1]), Exception), zip(animes, result))
+            animes = map(lambda res: res[0], pass_animes)
 
             # 檢查更新
             need_download: Iterable[MyselfAnimeTable] = list(filter(lambda anime_table: len(

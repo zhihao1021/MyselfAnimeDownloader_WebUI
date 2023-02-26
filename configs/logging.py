@@ -1,12 +1,13 @@
 from .config import LOGGING_CONFIG, MAX_LOGGER_NAME, TIMEZONE
 
+from utils import format_exception
+
 from copy import copy
 from logging import Formatter, getLevelName, getLogger, LogRecord, NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL, StreamHandler
 from os import fspath, listdir, makedirs, remove, rename
 from os.path import abspath, exists, isdir, isfile, join, split, splitext
 from datetime import datetime, time, timedelta
 from io import TextIOWrapper
-from traceback import format_exception
 
 from click import style
 from http import HTTPStatus

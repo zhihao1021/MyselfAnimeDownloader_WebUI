@@ -1,26 +1,25 @@
-from .ws_manger import ConnectionManager
-
 from aiorequests import Cache, url2cache_path
 from api import API, CacheData, DownloadData, GetFinishData, QueueModifyData, SearchData, SettingUpdateData
 from configs import CONFIG, GLOBAL_CONFIG, MYSELF_CONFIG, WEB_CONFIG
-from swap import IMAGE_CACHE_QUEUE
-from utils import Json
+from swap import BROADCAST_WS, IMAGE_CACHE_QUEUE
+from utils import ConnectionManager, Json
 
 from os.path import isfile, join, split as ossplit
 
 from aiofiles import open as aopen
 from asyncio import sleep as asleep
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, HTMLResponse, ORJSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from uvicorn import Config, Server
+from websockets.exceptions import ConnectionClosed
 
 
 def open_templates(filename: str):
     return join("dashboard/templates", filename)
 
 
-ws_download_queue = ConnectionManager()
+download_queue = ConnectionManager()
 
 
 class Dashboard:
@@ -39,9 +38,20 @@ class Dashboard:
     def run(self) -> None:
         self.server.run()
 
+    # 廣播訊息
+    @app.websocket("/ws/broadcast")
+    async def ws_broadcast(websocket: WebSocket):
+        await BROADCAST_WS.connect(websocket)
+        try:
+            while True:
+                await websocket.receive()
+        except:
+            await BROADCAST_WS.disconnect()
+
+    # 下載列表
     @app.websocket("/ws/download-queue")
-    async def api_download_queue(websocket: WebSocket):
-        uuid = await ws_download_queue.connect(websocket)
+    async def ws_download_queue(websocket: WebSocket):
+        uuid = await download_queue.connect(websocket)
         last_data = None
         while True:
             await asleep(1)
@@ -49,9 +59,10 @@ class Dashboard:
             if data == last_data:
                 continue
             last_data = data
-            if not await ws_download_queue.send(uuid, data):
+            if not await download_queue.send(uuid, data):
                 break
 
+    # Root
     @app.get("/", response_class=HTMLResponse)
     async def root():
         async with aopen(open_templates("index.html"), mode="rb") as file:
@@ -134,18 +145,38 @@ class Dashboard:
 
     # 取得每周更新列表
     @app.post("/api/get-week-anime", response_class=ORJSONResponse)
-    async def get_week_anime(data: CacheData):
+    async def api_get_week_anime(data: CacheData):
         return await API.get_week_anime(from_cache=data.from_cache)
 
     # 取得動畫年表
     @app.post("/api/get-year-anime", response_class=ORJSONResponse)
-    async def get_year_anime(data: CacheData):
+    async def api_get_year_anime(data: CacheData):
         return await API.get_year_anime(from_cache=data.from_cache)
 
     # 取得完結動畫列表
     @app.post("/api/get-finish-anime", response_class=ORJSONResponse)
-    async def get_finish_anime(data: GetFinishData):
+    async def api_get_finish_anime(data: GetFinishData):
         return await API.get_finish_anime(
             page_index=data.page_index,
             from_cache=data.from_cache
         )
+
+    # 取得檢查更新列表
+    @app.get("/api/get-update-list", response_class=ORJSONResponse)
+    async def get_update_list():
+        if not isfile("update-list.txt"):
+            return {
+                "data": ""
+            }
+        async with aopen("update-list.txt") as update_file:
+            content = await update_file.read()
+            return {
+                "data": content
+            }
+
+    # 修改檢查更新列表
+    @app.post("/api/send-update-list")
+    async def send_update_list(data: dict[str, str]):
+        async with aopen("update-list.txt", mode="w") as update_file:
+            await update_file.write(data.get("data", ""))
+        return "", 200

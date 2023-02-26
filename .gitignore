@@ -138,4 +138,4 @@ temp/
 download/
 cache/
 *.db
-sn_list.txt
+update-list.txt
