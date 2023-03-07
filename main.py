@@ -6,8 +6,8 @@ from configs import logger_init, MYSELF_CONFIG
 from swap import VIDEO_QUEUE
 from utils import format_exception, Thread
 
-from asyncio import (all_tasks, CancelledError, create_task, gather, set_event_loop_policy,
-                     sleep as asleep, WindowsSelectorEventLoopPolicy, new_event_loop)
+from asyncio import (all_tasks, CancelledError, create_task, gather,
+                     sleep as asleep, new_event_loop)
 from logging import getLogger
 from os.path import isfile
 from platform import system
@@ -98,6 +98,7 @@ async def check_myself_update():
 
 if __name__ == "__main__":
     if system() == "Windows":
+        from asyncio import set_event_loop_policy, WindowsSelectorEventLoopPolicy
         set_event_loop_policy(WindowsSelectorEventLoopPolicy())
     logger_init()
     MAIN_LOGGER.info(f"當前版本: {VERSION}")
