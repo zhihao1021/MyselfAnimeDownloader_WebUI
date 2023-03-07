@@ -41,12 +41,12 @@ class Dashboard:
     # 廣播訊息
     @app.websocket("/ws/broadcast")
     async def ws_broadcast(websocket: WebSocket):
-        await BROADCAST_WS.connect(websocket)
+        uuid = await BROADCAST_WS.connect(websocket)
         try:
             while True:
                 await websocket.receive()
         except:
-            await BROADCAST_WS.disconnect()
+            await BROADCAST_WS.disconnect(uuid)
 
     # 下載列表
     @app.websocket("/ws/download-queue")
